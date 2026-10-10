@@ -10,3 +10,16 @@
 .live-player-frame{display:block;width:100%;aspect-ratio:16/9;height:auto;border:0;border-radius:10px;background:#000;margin-top:14px}
 .live-player-frame[hidden]{display:none}
 @media(max-width:520px){.live-player-heading h3{font-size:15px}.live-player-heading a{font-size:11px}}
+
+/* Unified Game Day panel: team header and active-stream player share one card. */
+.game-day-card{border:1px solid #4b2a15;background:#121212;border-radius:16px;padding:18px;box-shadow:0 8px 30px #0008}
+.game-day-card-header{display:flex;align-items:center;gap:14px}
+.game-day-team{flex:1;min-width:0}
+.game-day-team h3{margin:0;font-size:17px}
+.game-day-team p{margin:5px 0 0;color:#aaa;font-size:13px}
+.game-day-watch{display:inline-block;background:var(--orange);color:#050505;text-decoration:none;font-weight:900;padding:12px 14px;border-radius:10px;font-size:12px;white-space:nowrap}
+.game-day-card .game-day-live{margin-top:16px;padding:16px 0 0;border:0;border-top:1px solid #4b2a15;border-radius:0;box-shadow:none;background:transparent}
+.game-day-card .live-player-heading{display:block}
+.game-day-card .live-player-heading h3{margin:6px 0 0;font-size:16px}
+.game-day-card:has(.game-day-live.is-live){border-color:var(--orange)}
+@media(max-width:520px){.game-day-card{padding:14px}.game-day-card-header{gap:10px}.game-day-card .game-logo{width:52px;height:52px}.game-day-team h3{font-size:14px}.game-day-team p{font-size:11px}.game-day-watch{font-size:10px;padding:10px}}
