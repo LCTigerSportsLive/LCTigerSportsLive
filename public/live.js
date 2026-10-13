@@ -23,18 +23,27 @@
         player.hidden = false;
         status.textContent = '● LIVE NOW — Watch the broadcast below';
         panel.classList.add('is-live');
+      } else if (data.status === 'unavailable') {
+        // If YouTube blocks status checks, offer its channel-level player instead
+        // of hiding the viewing window completely.
+        if (currentId !== 'channel-fallback') {
+          currentId = 'channel-fallback';
+          player.src = 'https://www.youtube.com/embed/live_stream?channel=UCHteYhHnv-6VrSc9ImSs62g';
+        }
+        player.hidden = false;
+        title.textContent = 'Tiger Sports Live';
+        panel.classList.remove('is-live');
+        status.textContent = 'Live status could not be confirmed. Try the player below, or use WATCH LIVE to open YouTube directly.';
       } else {
         currentId = null;
         player.removeAttribute('src');
         player.hidden = true;
         title.textContent = 'Tiger Sports Live';
         panel.classList.remove('is-live');
-        status.textContent = data.status === 'unavailable'
-          ? 'Unable to check live status right now. Use Watch on YouTube to check.'
-          : 'No broadcast is live right now. This player will appear automatically when we go live.';
+        status.textContent = 'No broadcast is live right now. This player will appear automatically when we go live.';
       }
     } catch {
-      status.textContent = 'Unable to check live status right now. Use Watch on YouTube to check.';
+      status.textContent = 'Live status check failed. Use WATCH LIVE to open YouTube directly.';
     } finally {
       running = false;
     }
