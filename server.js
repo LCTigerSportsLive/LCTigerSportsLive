@@ -26,7 +26,7 @@ function identifyChannel(html) {
   return null;
 }
 const validId = /^[A-Za-z0-9_-]{11}$/;
-let liveCache = { expires: 0, data: { live: false, status: 'checking' } };
+let liveCache = { expires: 0, data: { live: false, status: 'checking', streams: [] } };
 let liveRequest = null;
 
 function parseAssignedJSON(html, name) {
@@ -76,15 +76,24 @@ function liveFromPlayer(html) {
   return null;
 }
 
+function uniqueStreams(streams) {
+  const seen = new Set();
+  return streams.filter(stream => {
+    if (!stream || !validId.test(stream.videoId || '') || seen.has(stream.videoId)) return false;
+    seen.add(stream.videoId);
+    return true;
+  });
+}
+
 function liveFromStreams(html) {
   const initial = parseAssignedJSON(html, 'ytInitialData');
   if (!initial) return null;
+  const streams = [];
   const stack = [initial];
   let scanned = 0;
   while (stack.length && scanned++ < 60000) {
     const item = stack.pop();
     if (!item || typeof item !== 'object') continue;
-    // YouTube can use videoRenderer, gridVideoRenderer or lockupViewModel.
     const video = item.videoRenderer || item.gridVideoRenderer;
     if (video && validId.test(video.videoId || '')) {
       const overlays = video.thumbnailOverlays || [];
@@ -99,23 +108,22 @@ function liveFromStreams(html) {
       });
       if (liveOverlay || liveBadge) {
         const title = video.title?.runs?.map(r => r.text).join('') || video.title?.simpleText || 'Tiger Sports Live broadcast';
-        return { live: true, status: 'live', videoId: video.videoId, title, source: 'streams' };
+        streams.push({ videoId: video.videoId, title, source: 'streams' });
       }
     }
-    // Also handle YouTube's newer lockup card representation.
     const lockup = item.lockupViewModel;
     if (lockup && validId.test(lockup.contentId || '') && lockup.contentType === 'LOCKUP_CONTENT_TYPE_VIDEO') {
-      const serialized = JSON.stringify(lockup);
-      if (/BADGE_STYLE_TYPE_LIVE_NOW|"style":"LIVE"|"label":"LIVE"/.test(serialized)) {
+      const badges = JSON.stringify(lockup);
+      if (/BADGE_STYLE_TYPE_LIVE_NOW|"style":"LIVE"|"label":"LIVE"/.test(badges)) {
         const title = lockup.metadata?.lockupMetadataViewModel?.title?.content || 'Tiger Sports Live broadcast';
-        return { live: true, status: 'live', videoId: lockup.contentId, title, source: 'streams' };
+        streams.push({ videoId: lockup.contentId, title, source: 'streams' });
       }
     }
     for (const value of Object.values(item)) {
       if (value && typeof value === 'object') stack.push(value);
     }
   }
-  return { live: false, status: 'offline', source: 'streams' };
+  return uniqueStreams(streams);
 }
 
 async function liveFromOfficialApi() {
@@ -137,66 +145,83 @@ async function liveFromOfficialApi() {
   query.searchParams.set('channelId', channelId);
   query.searchParams.set('eventType', 'live');
   query.searchParams.set('type', 'video');
-  query.searchParams.set('maxResults', '5');
+  query.searchParams.set('maxResults', '50');
   query.searchParams.set('key', process.env.YOUTUBE_API_KEY);
   const response = await fetch(query, { signal: AbortSignal.timeout(8000) });
   if (!response.ok) throw new Error('YouTube Data API HTTP ' + response.status);
   const result = await response.json();
-  const found = (result.items || []).find(v => validId.test(v.id?.videoId || '') && v.snippet?.liveBroadcastContent === 'live');
-  return found ? { live: true, status: 'live', videoId: found.id.videoId, title: found.snippet.title, source: 'youtube-api' } : { live: false, status: 'offline', source: 'youtube-api' };
+  return uniqueStreams((result.items || [])
+    .filter(v => v.snippet?.liveBroadcastContent === 'live')
+    .map(v => ({ videoId: v.id?.videoId, title: v.snippet?.title || 'Tiger Sports Live broadcast', source: 'youtube-api' })));
 }
 
 async function liveFromRecentFeed() {
-  if (!channelIdPattern.test(channelId || '')) return null;
+  if (!channelIdPattern.test(channelId || '')) return [];
   const feed = await getYoutubePage('https://www.youtube.com/feeds/videos.xml?channel_id=' + channelId);
   const ids = [...feed.matchAll(/<yt:videoId>([A-Za-z0-9_-]{11})<\/yt:videoId>/g)]
-    .slice(0, 6).map(match => match[1]);
-  if (!ids.length) return null;
+    .slice(0, 15).map(match => match[1]);
   const results = await Promise.allSettled(ids.map(async id => {
     const html = await getYoutubePage('https://www.youtube.com/watch?v=' + id);
     const live = liveFromPlayer(html);
-    return live && live.videoId === id ? { ...live, source: 'recent-feed' } : null;
+    return live && live.videoId === id ? { videoId: live.videoId, title: live.title, source: 'recent-feed' } : null;
   }));
-  return results.find(r => r.status === 'fulfilled' && r.value)?.value || null;
+  return uniqueStreams(results.filter(r => r.status === 'fulfilled').map(r => r.value));
 }
 
 async function checkLive() {
   if (Date.now() < liveCache.expires) return liveCache.data;
   if (liveRequest) return liveRequest;
   liveRequest = (async () => {
-    let data = { live: false, status: 'unavailable' };
+    let streams = [];
+    let status = 'unavailable';
+    let source = 'unavailable';
     const override = process.env.LIVE_VIDEO_ID;
     if (override && validId.test(override)) {
-      data = { live: true, status: 'live', videoId: override, title: 'Tiger Sports Live broadcast', source: 'manual' };
+      streams = [{ videoId: override, title: 'Tiger Sports Live broadcast', source: 'manual' }];
+      status = 'live';
+      source = 'manual';
     } else {
       if (process.env.YOUTUBE_API_KEY) {
-        try { data = await liveFromOfficialApi(); }
-        catch (error) { console.warn('Live API check:', error.message); }
-      }
-      if (data.status === 'unavailable' || (!data.live && data.source !== 'youtube-api')) {
         try {
-          const streams = await getYoutubePage(channelHandle + '/streams');
-          data = liveFromStreams(streams) || { live: false, status: 'unavailable' };
+          streams = await liveFromOfficialApi();
+          status = streams.length ? 'live' : 'offline';
+          source = 'youtube-api';
+        } catch (error) { console.warn('Live API check:', error.message); }
+      }
+      if (source !== 'youtube-api') {
+        // The public YouTube pages can change. Try multiple sources, deduplicating
+        // by video ID so simultaneous games each get their own player.
+        try {
+          const html = await getYoutubePage(channelHandle + '/streams');
+          streams.push(...(liveFromStreams(html) || []));
+          status = 'offline';
+          source = 'streams';
         } catch (error) { console.warn('YouTube streams check:', error.message); }
-        if (!data.live) {
-          try {
-            const html = await getYoutubePage(channelHandle + '/live');
-            const player = liveFromPlayer(html);
-            if (player) data = player;
-          } catch (error) { console.warn('YouTube player check:', error.message); }
-        }
-        if (!data.live && channelIdPattern.test(channelId || '')) {
+        try {
+          const html = await getYoutubePage(channelHandle + '/live');
+          const player = liveFromPlayer(html);
+          if (player) streams.push({ videoId: player.videoId, title: player.title, source: 'player' });
+        } catch (error) { console.warn('YouTube player check:', error.message); }
+        if (channelIdPattern.test(channelId || '')) {
           try {
             const recent = await liveFromRecentFeed();
-            if (recent) data = recent;
+            streams.push(...recent);
           } catch (error) { console.warn('YouTube recent feed check:', error.message); }
         }
       }
     }
-    // YouTube Data API search consumes quota; poll less frequently when it is used.
-    const ttl = data.source === 'youtube-api' ? 15 * 60 * 1000 : data.live ? 30000 : 45000;
+    streams = uniqueStreams(streams);
+    if (streams.length) status = 'live';
+    const first = streams[0];
+    const data = {
+      live: streams.length > 0, status, streams,
+      ...(first ? { videoId: first.videoId, title: first.title } : {}),
+      source
+    };
+    // Official API search consumes 100 quota units per check; cache for 15 minutes.
+    const ttl = source === 'youtube-api' ? 15 * 60 * 1000 : streams.length ? 30000 : 45000;
     liveCache = { data, expires: Date.now() + ttl };
-    console.log('Live check:', data.status, data.source || 'unavailable', data.videoId || '');
+    console.log('Live check:', status, source, streams.map(v => v.videoId).join(','));
     return data;
   })();
   try { return await liveRequest; } finally { liveRequest = null; }
