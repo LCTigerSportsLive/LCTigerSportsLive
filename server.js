@@ -28,6 +28,7 @@ function identifyChannel(html) {
 const validId = /^[A-Za-z0-9_-]{11}$/;
 let liveCache = { expires: 0, data: { live: false, status: 'checking' } };
 let liveRequest = null;
+let lastConfirmedLive = { data: null, expires: 0 };
 
 function parseAssignedJSON(html, name) {
   const pattern = new RegExp('(?:var\\s+)?' + name + '\\s*=\\s*');
