@@ -174,7 +174,7 @@ async function liveFromChannelVideos(html) {
     const page = await getYoutubePage('https://www.youtube.com/watch?v=' + id);
     return liveFromPlayer(page);
   }));
-  console.log('Candidate verification:', results.length, 'live:', results.filter(r => r.status === 'fulfilled' && r.value).length, 'errors:', results.filter(r => r.status === 'rejected').length);
+  console.log('Candidate verification:', results.length, 'live:', results.filter(r => r.status === 'fulfilled' && r.value).length, 'errors:', results.filter(r => r.status === 'rejected').slice(0, 4).map(r => r.reason?.message || String(r.reason)).join(' | '));
   return results.find(result => result.status === 'fulfilled' && result.value)?.value || null;
 }
 
