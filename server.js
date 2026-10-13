@@ -242,6 +242,11 @@ async function checkLive() {
         }
       }
     }
+    // YouTube intermittently serves a channel listing even while the stream is live.
+    // Keep the most recently verified player for five minutes rather than flickering offline.
+    if (data.live) lastConfirmedLive = { data, expires: Date.now() + 5 * 60 * 1000 };
+    else if (lastConfirmedLive.data && Date.now() < lastConfirmedLive.expires)
+      data = { ...lastConfirmedLive.data, source: 'recently-confirmed' };
     // YouTube Data API search consumes quota; poll less frequently when it is used.
     const ttl = data.source === 'youtube-api' ? 15 * 60 * 1000 : data.live ? 30000 : 45000;
     liveCache = { data, expires: Date.now() + ttl };
