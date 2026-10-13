@@ -222,7 +222,7 @@ async function checkLive() {
           const activePlayer = liveFromPlayer(livePage);
           if (activePlayer) data = activePlayer;
         } catch (error) { console.warn('YouTube live page check:', error.message); }
-        try {
+        if (!data.live) try {
           const streams = await getYoutubePage(channelHandle + '/streams');
           data = liveFromStreams(streams) || { live: false, status: 'unavailable' };
           if (!data.live) {
