@@ -229,6 +229,7 @@ async function checkLive() {
           try {
             const canonicalPage = await getYoutubePage('https://www.youtube.com/channel/' + channelId + '/live');
             const canonicalPlayer = liveFromPlayer(canonicalPage);
+            console.log('Canonical live check:', canonicalPlayer?.videoId || 'no live player');
             if (canonicalPlayer) data = canonicalPlayer;
           } catch (error) { console.warn('Canonical channel live check:', error.message); }
         }
