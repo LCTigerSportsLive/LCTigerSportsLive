@@ -146,6 +146,20 @@ async function liveFromOfficialApi() {
   return found ? { live: true, status: 'live', videoId: found.id.videoId, title: found.snippet.title, source: 'youtube-api' } : { live: false, status: 'offline', source: 'youtube-api' };
 }
 
+async function liveFromRecentFeed() {
+  if (!channelIdPattern.test(channelId || '')) return null;
+  const feed = await getYoutubePage('https://www.youtube.com/feeds/videos.xml?channel_id=' + channelId);
+  const ids = [...feed.matchAll(/<yt:videoId>([A-Za-z0-9_-]{11})<\/yt:videoId>/g)]
+    .slice(0, 6).map(match => match[1]);
+  if (!ids.length) return null;
+  const results = await Promise.allSettled(ids.map(async id => {
+    const html = await getYoutubePage('https://www.youtube.com/watch?v=' + id);
+    const live = liveFromPlayer(html);
+    return live && live.videoId === id ? { ...live, source: 'recent-feed' } : null;
+  }));
+  return results.find(r => r.status === 'fulfilled' && r.value)?.value || null;
+}
+
 async function checkLive() {
   if (Date.now() < liveCache.expires) return liveCache.data;
   if (liveRequest) return liveRequest;
@@ -170,6 +184,12 @@ async function checkLive() {
             const player = liveFromPlayer(html);
             if (player) data = player;
           } catch (error) { console.warn('YouTube player check:', error.message); }
+        }
+        if (!data.live && channelIdPattern.test(channelId || '')) {
+          try {
+            const recent = await liveFromRecentFeed();
+            if (recent) data = recent;
+          } catch (error) { console.warn('YouTube recent feed check:', error.message); }
         }
       }
     }
