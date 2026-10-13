@@ -175,7 +175,7 @@ async function liveFromChannelVideos(html) {
   console.log('Channel candidate video IDs:', [...ids].join(',') || 'none');
   const results = await Promise.allSettled([...ids].map(async id => {
     const page = await getYoutubePage('https://www.youtube.com/watch?v=' + id);
-    if ([...ids].indexOf(id) < 3) {
+    if ([...ids].indexOf(id) < 10) {
       const p = parseAssignedJSON(page, 'ytInitialPlayerResponse');
       console.log('Watch video diagnostic:', id, 'status:', p?.playabilityStatus?.status,
         'liveContent:', p?.videoDetails?.isLiveContent,
