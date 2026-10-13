@@ -81,7 +81,10 @@ function liveFromPlayer(html) {
   const player = parseAssignedJSON(html, 'ytInitialPlayerResponse');
   const details = player?.videoDetails;
   const broadcast = player?.microformat?.playerMicroformatRenderer?.liveBroadcastDetails;
-  if (broadcast?.isLiveNow === true && validId.test(details?.videoId || '')) {
+  const currentlyPlayingLive = broadcast?.isLiveNow === true ||
+    (details?.isLiveContent === true && player?.playabilityStatus?.status === 'OK' &&
+     !broadcast?.endTimestamp && Boolean(player?.streamingData));
+  if (currentlyPlayingLive && validId.test(details?.videoId || '')) {
     return { live: true, status: 'live', videoId: details.videoId, title: details.title || 'Tiger Sports Live broadcast', source: 'player' };
   }
   return null;
