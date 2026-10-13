@@ -163,7 +163,7 @@ async function liveFromChannelVideos(html) {
   const ids = new Set();
   const stack = [initial];
   while (stack.length && ids.size < 12) {
-    const node = stack.pop();
+    const node = stack.shift();
     if (!node || typeof node !== 'object') continue;
     const id = node.videoRenderer?.videoId || node.gridVideoRenderer?.videoId || node.lockupViewModel?.contentId;
     if (validId.test(id || '')) ids.add(id);
