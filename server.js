@@ -146,6 +146,25 @@ async function liveFromOfficialApi() {
   return found ? { live: true, status: 'live', videoId: found.id.videoId, title: found.snippet.title, source: 'youtube-api' } : { live: false, status: 'offline', source: 'youtube-api' };
 }
 
+async function liveFromChannelVideos(html) {
+  const initial = parseAssignedJSON(html, 'ytInitialData');
+  if (!initial) return null;
+  const ids = new Set();
+  const stack = [initial];
+  while (stack.length && ids.size < 12) {
+    const node = stack.pop();
+    if (!node || typeof node !== 'object') continue;
+    const id = node.videoRenderer?.videoId || node.gridVideoRenderer?.videoId || node.lockupViewModel?.contentId;
+    if (validId.test(id || '')) ids.add(id);
+    for (const value of Object.values(node)) if (value && typeof value === 'object') stack.push(value);
+  }
+  const results = await Promise.allSettled([...ids].map(async id => {
+    const page = await getYoutubePage('https://www.youtube.com/watch?v=' + id);
+    return liveFromPlayer(page);
+  }));
+  return results.find(result => result.status === 'fulfilled' && result.value)?.value || null;
+}
+
 async function liveFromRecentFeed() {
   if (!channelIdPattern.test(channelId || '')) return null;
   const feed = await getYoutubePage('https://www.youtube.com/feeds/videos.xml?channel_id=' + channelId);
