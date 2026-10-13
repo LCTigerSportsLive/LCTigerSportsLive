@@ -4,8 +4,27 @@ const path = require('path');
 
 const port = process.env.PORT || 3000;
 const types = { '.html':'text/html', '.css':'text/css', '.js':'text/javascript', '.json':'application/json', '.svg':'image/svg+xml', '.webp':'image/webp' };
-const channelId = 'UCHteYhHnv-6VrSc9ImSs62g';
-const channelUrl = 'https://www.youtube.com/channel/' + channelId;
+const channelHandle = 'https://www.youtube.com/@LCTigerSportsLive';
+let channelId = process.env.YOUTUBE_CHANNEL_ID || null;
+const channelIdPattern = /^UC[A-Za-z0-9_-]{22}$/;
+
+function identifyChannel(html) {
+  const matches = [
+    /"channelId"\s*:\s*"(UC[A-Za-z0-9_-]{22})"/,
+    /"externalId"\s*:\s*"(UC[A-Za-z0-9_-]{22})"/,
+    /<meta\s+itemprop="channelId"\s+content="(UC[A-Za-z0-9_-]{22})"/,
+    /youtube\.com\/channel\/(UC[A-Za-z0-9_-]{22})/
+  ];
+  for (const pattern of matches) {
+    const id = pattern.exec(html)?.[1];
+    if (id && channelIdPattern.test(id)) {
+      if (channelId !== id) console.log('Resolved YouTube channel from @LCTigerSportsLive:', id);
+      channelId = id;
+      return id;
+    }
+  }
+  return null;
+}
 const validId = /^[A-Za-z0-9_-]{11}$/;
 let liveCache = { expires: 0, data: { live: false, status: 'checking' } };
 let liveRequest = null;
@@ -42,7 +61,9 @@ async function getYoutubePage(url) {
     signal: AbortSignal.timeout(8500)
   });
   if (!response.ok) throw new Error('YouTube HTTP ' + response.status);
-  return response.text();
+  const html = await response.text();
+  if (url.startsWith(channelHandle)) identifyChannel(html);
+  return html;
 }
 
 function liveFromPlayer(html) {
@@ -99,6 +120,18 @@ function liveFromStreams(html) {
 
 async function liveFromOfficialApi() {
   if (!process.env.YOUTUBE_API_KEY) return null;
+  if (!channelIdPattern.test(channelId || '')) {
+    const lookup = new URL('https://www.googleapis.com/youtube/v3/channels');
+    lookup.searchParams.set('part', 'id');
+    lookup.searchParams.set('forHandle', '@LCTigerSportsLive');
+    lookup.searchParams.set('key', process.env.YOUTUBE_API_KEY);
+    const found = await fetch(lookup, { signal: AbortSignal.timeout(8000) });
+    if (!found.ok) throw new Error('YouTube channel lookup HTTP ' + found.status);
+    const result = await found.json();
+    channelId = result.items?.[0]?.id || null;
+    if (!channelIdPattern.test(channelId || '')) throw new Error('Channel handle could not be resolved');
+    console.log('Resolved channel through YouTube Data API:', channelId);
+  }
   const query = new URL('https://www.googleapis.com/youtube/v3/search');
   query.searchParams.set('part', 'snippet');
   query.searchParams.set('channelId', channelId);
@@ -128,19 +161,21 @@ async function checkLive() {
       }
       if (data.status === 'unavailable' || (!data.live && data.source !== 'youtube-api')) {
         try {
-          const streams = await getYoutubePage(channelUrl + '/streams?view=2&live_view=501');
+          const streams = await getYoutubePage(channelHandle + '/streams');
           data = liveFromStreams(streams) || { live: false, status: 'unavailable' };
         } catch (error) { console.warn('YouTube streams check:', error.message); }
         if (!data.live) {
           try {
-            const html = await getYoutubePage(channelUrl + '/live');
+            const html = await getYoutubePage(channelHandle + '/live');
             const player = liveFromPlayer(html);
             if (player) data = player;
           } catch (error) { console.warn('YouTube player check:', error.message); }
         }
       }
     }
-    liveCache = { data, expires: Date.now() + (data.live ? 30000 : 45000) };
+    // YouTube Data API search consumes quota; poll less frequently when it is used.
+    const ttl = data.source === 'youtube-api' ? 15 * 60 * 1000 : data.live ? 30000 : 45000;
+    liveCache = { data, expires: Date.now() + ttl };
     console.log('Live check:', data.status, data.source || 'unavailable', data.videoId || '');
     return data;
   })();
