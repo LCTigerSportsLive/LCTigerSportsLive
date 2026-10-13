@@ -225,10 +225,6 @@ async function checkLive() {
         if (!data.live) try {
           const streams = await getYoutubePage(channelHandle + '/streams');
           data = liveFromStreams(streams) || { live: false, status: 'unavailable' };
-          if (!data.live) {
-            const verified = await liveFromChannelVideos(streams);
-            if (verified) data = verified;
-          }
         } catch (error) { console.warn('YouTube streams check:', error.message); }
         if (!data.live) {
           try {
