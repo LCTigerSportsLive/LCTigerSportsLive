@@ -4,14 +4,15 @@ const path = require('path');
 
 const port = process.env.PORT || 3000;
 const types = { '.html':'text/html', '.css':'text/css', '.js':'text/javascript', '.json':'application/json', '.svg':'image/svg+xml', '.webp':'image/webp' };
-const channelLiveUrl = 'https://www.youtube.com/@LCTigerSportsLive/live';
+const channelId = 'UCHteYhHnv-6VrSc9ImSs62g';
+const channelUrl = 'https://www.youtube.com/channel/' + channelId;
+const validId = /^[A-Za-z0-9_-]{11}$/;
 let liveCache = { expires: 0, data: { live: false, status: 'checking' } };
 let liveRequest = null;
 
-// YouTube's /live page resolves to the active stream when one is broadcasting.
-// Check the player metadata, not just the URL: /live can also show a replay.
-function extractPlayerResponse(html) {
-  const match = /(?:var\s+)?ytInitialPlayerResponse\s*=\s*/.exec(html);
+function parseAssignedJSON(html, name) {
+  const pattern = new RegExp('(?:var\\s+)?' + name + '\\s*=\\s*');
+  const match = pattern.exec(html);
   if (!match) return null;
   const start = html.indexOf('{', match.index + match[0].length);
   if (start < 0) return null;
@@ -31,31 +32,116 @@ function extractPlayerResponse(html) {
   return null;
 }
 
+async function getYoutubePage(url) {
+  const response = await fetch(url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
+      'Accept-Language': 'en-US,en;q=0.9'
+    },
+    redirect: 'follow',
+    signal: AbortSignal.timeout(8500)
+  });
+  if (!response.ok) throw new Error('YouTube HTTP ' + response.status);
+  return response.text();
+}
+
+function liveFromPlayer(html) {
+  const player = parseAssignedJSON(html, 'ytInitialPlayerResponse');
+  const details = player?.videoDetails;
+  const broadcast = player?.microformat?.playerMicroformatRenderer?.liveBroadcastDetails;
+  if (broadcast?.isLiveNow === true && validId.test(details?.videoId || '')) {
+    return { live: true, status: 'live', videoId: details.videoId, title: details.title || 'Tiger Sports Live broadcast', source: 'player' };
+  }
+  return null;
+}
+
+function liveFromStreams(html) {
+  const initial = parseAssignedJSON(html, 'ytInitialData');
+  if (!initial) return null;
+  const stack = [initial];
+  let scanned = 0;
+  while (stack.length && scanned++ < 60000) {
+    const item = stack.pop();
+    if (!item || typeof item !== 'object') continue;
+    // YouTube can use videoRenderer, gridVideoRenderer or lockupViewModel.
+    const video = item.videoRenderer || item.gridVideoRenderer;
+    if (video && validId.test(video.videoId || '')) {
+      const overlays = video.thumbnailOverlays || [];
+      const badges = [...(video.badges || []), ...(video.ownerBadges || [])];
+      const liveOverlay = overlays.some(o => {
+        const v = o.thumbnailOverlayTimeStatusRenderer || {};
+        return v.style === 'LIVE' || v.style === 'LIVE_NOW';
+      });
+      const liveBadge = badges.some(b => {
+        const v = b.metadataBadgeRenderer || {};
+        return v.style === 'BADGE_STYLE_TYPE_LIVE_NOW' || (v.label || '').toUpperCase() === 'LIVE';
+      });
+      if (liveOverlay || liveBadge) {
+        const title = video.title?.runs?.map(r => r.text).join('') || video.title?.simpleText || 'Tiger Sports Live broadcast';
+        return { live: true, status: 'live', videoId: video.videoId, title, source: 'streams' };
+      }
+    }
+    // Also handle YouTube's newer lockup card representation.
+    const lockup = item.lockupViewModel;
+    if (lockup && validId.test(lockup.contentId || '') && lockup.contentType === 'LOCKUP_CONTENT_TYPE_VIDEO') {
+      const serialized = JSON.stringify(lockup);
+      if (/BADGE_STYLE_TYPE_LIVE_NOW|"style":"LIVE"|"label":"LIVE"/.test(serialized)) {
+        const title = lockup.metadata?.lockupMetadataViewModel?.title?.content || 'Tiger Sports Live broadcast';
+        return { live: true, status: 'live', videoId: lockup.contentId, title, source: 'streams' };
+      }
+    }
+    for (const value of Object.values(item)) {
+      if (value && typeof value === 'object') stack.push(value);
+    }
+  }
+  return { live: false, status: 'offline', source: 'streams' };
+}
+
+async function liveFromOfficialApi() {
+  if (!process.env.YOUTUBE_API_KEY) return null;
+  const query = new URL('https://www.googleapis.com/youtube/v3/search');
+  query.searchParams.set('part', 'snippet');
+  query.searchParams.set('channelId', channelId);
+  query.searchParams.set('eventType', 'live');
+  query.searchParams.set('type', 'video');
+  query.searchParams.set('maxResults', '5');
+  query.searchParams.set('key', process.env.YOUTUBE_API_KEY);
+  const response = await fetch(query, { signal: AbortSignal.timeout(8000) });
+  if (!response.ok) throw new Error('YouTube Data API HTTP ' + response.status);
+  const result = await response.json();
+  const found = (result.items || []).find(v => validId.test(v.id?.videoId || '') && v.snippet?.liveBroadcastContent === 'live');
+  return found ? { live: true, status: 'live', videoId: found.id.videoId, title: found.snippet.title, source: 'youtube-api' } : { live: false, status: 'offline', source: 'youtube-api' };
+}
+
 async function checkLive() {
   if (Date.now() < liveCache.expires) return liveCache.data;
   if (liveRequest) return liveRequest;
   liveRequest = (async () => {
-    let data = { live: false, status: 'offline' };
-    try {
-      const response = await fetch(channelLiveUrl, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; TigerSportsLive/1.0)', 'Accept-Language': 'en-US,en;q=0.9' },
-        signal: AbortSignal.timeout(9000)
-      });
-      if (!response.ok) throw new Error('YouTube returned ' + response.status);
-      const html = await response.text();
-      const player = extractPlayerResponse(html);
-      if (!player) throw new Error('YouTube player data unavailable');
-      const details = player.videoDetails || {};
-      const broadcast = player.microformat?.playerMicroformatRenderer?.liveBroadcastDetails;
-      const videoId = details.videoId;
-      if (broadcast?.isLiveNow === true && /^[A-Za-z0-9_-]{11}$/.test(videoId || '')) {
-        data = { live: true, status: 'live', videoId, title: details.title || 'Tiger Sports Live broadcast' };
+    let data = { live: false, status: 'unavailable' };
+    const override = process.env.LIVE_VIDEO_ID;
+    if (override && validId.test(override)) {
+      data = { live: true, status: 'live', videoId: override, title: 'Tiger Sports Live broadcast', source: 'manual' };
+    } else {
+      if (process.env.YOUTUBE_API_KEY) {
+        try { data = await liveFromOfficialApi(); }
+        catch (error) { console.warn('Live API check:', error.message); }
       }
-    } catch (error) {
-      console.warn('Live status check:', error.message);
-      data = { live: false, status: 'unavailable' };
+      if (data.status === 'unavailable' || (!data.live && data.source !== 'youtube-api')) {
+        try {
+          const streams = await getYoutubePage(channelUrl + '/streams?view=2&live_view=501');
+          data = liveFromStreams(streams) || { live: false, status: 'unavailable' };
+        } catch (error) { console.warn('YouTube streams check:', error.message); }
+        if (!data.live) {
+          try {
+            const html = await getYoutubePage(channelUrl + '/live');
+            const player = liveFromPlayer(html);
+            if (player) data = player;
+          } catch (error) { console.warn('YouTube player check:', error.message); }
+        }
+      }
     }
-    liveCache = { data, expires: Date.now() + (data.live ? 45000 : 60000) };
+    liveCache = { data, expires: Date.now() + (data.live ? 30000 : 45000) };
+    console.log('Live check:', data.status, data.source || 'unavailable', data.videoId || '');
     return data;
   })();
   try { return await liveRequest; } finally { liveRequest = null; }
