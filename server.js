@@ -254,4 +254,4 @@ http.createServer(async (req, res) => {
     res.writeHead(200, { 'Content-Type': types[path.extname(file)] || 'application/octet-stream' });
     res.end(bytes);
   });
-}).listen(port, () => console.log('Tiger Sports Live on ' + port));
+}).listen(port, () => { console.log('Tiger Sports Live on ' + port); checkLive().catch(error => console.warn('Startup live check:', error.message)); });
