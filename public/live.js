@@ -4,22 +4,13 @@
   const player = document.getElementById('live-player');
   const title = document.getElementById('live-stream-title');
   if (!panel || !status || !player || !title) return;
-
-  const channelPlayer = 'https://www.youtube.com/embed/live_stream?channel=UCHteYhHnv-6VrSc9ImSs62g';
-  let currentId = 'channel';
+  let currentId = null;
   let running = false;
 
-  // The channel-level player stays on screen even when the separate live
-  // detector cannot read YouTube's stream listing.
-  player.src = channelPlayer;
-  player.hidden = false;
-
-  function showChannelPlayer() {
-    if (currentId !== 'channel') {
-      currentId = 'channel';
-      player.src = channelPlayer;
-    }
-    player.hidden = false;
+  function clearPlayer() {
+    currentId = null;
+    player.removeAttribute('src');
+    player.hidden = true;
     title.textContent = 'Tiger Sports Live';
     panel.classList.remove('is-live');
   }
@@ -41,17 +32,20 @@
         status.textContent = '● LIVE NOW — Watch the broadcast below';
         panel.classList.add('is-live');
       } else {
-        showChannelPlayer();
-        status.textContent = 'Live player for our YouTube channel. If YouTube does not play the broadcast here, select WATCH LIVE above.';
+        clearPlayer();
+        status.textContent = data.status === 'unavailable'
+          ? 'Live status cannot be confirmed right now. Select WATCH LIVE to view the channel on YouTube.'
+          : 'No live broadcast was detected. Select WATCH LIVE to check YouTube for current broadcasts.';
       }
     } catch {
-      showChannelPlayer();
-      status.textContent = 'Live player for our YouTube channel. If playback is unavailable, select WATCH LIVE above.';
+      clearPlayer();
+      status.textContent = 'Live status cannot be confirmed right now. Select WATCH LIVE to open YouTube.';
     } finally {
       running = false;
     }
   }
 
+  clearPlayer();
   refreshLive();
   setInterval(refreshLive, 60000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshLive(); });
