@@ -223,6 +223,15 @@ async function checkLive() {
           const activePlayer = liveFromPlayer(livePage);
           if (activePlayer) data = activePlayer;
         } catch (error) { console.warn('YouTube live page check:', error.message); }
+        // Some YouTube responses omit the live player on handle URLs.
+        // Retry through the resolved canonical channel URL before checking listings.
+        if (!data.live && channelIdPattern.test(channelId || '')) {
+          try {
+            const canonicalPage = await getYoutubePage('https://www.youtube.com/channel/' + channelId + '/live');
+            const canonicalPlayer = liveFromPlayer(canonicalPage);
+            if (canonicalPlayer) data = canonicalPlayer;
+          } catch (error) { console.warn('Canonical channel live check:', error.message); }
+        }
         if (!data.live) try {
           const streams = await getYoutubePage(channelHandle + '/streams');
           data = liveFromStreams(streams) || { live: false, status: 'unavailable' };
