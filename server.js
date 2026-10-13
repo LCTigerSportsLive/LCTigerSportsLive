@@ -169,6 +169,7 @@ async function liveFromChannelVideos(html) {
     if (validId.test(id || '')) ids.add(id);
     for (const value of Object.values(node)) if (value && typeof value === 'object') stack.push(value);
   }
+  console.log('Channel candidate video IDs:', [...ids].join(',') || 'none');
   const results = await Promise.allSettled([...ids].map(async id => {
     const page = await getYoutubePage('https://www.youtube.com/watch?v=' + id);
     return liveFromPlayer(page);
