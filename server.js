@@ -62,7 +62,18 @@ async function getYoutubePage(url) {
   });
   if (!response.ok) throw new Error('YouTube HTTP ' + response.status);
   const html = await response.text();
-  if (url.startsWith(channelHandle)) identifyChannel(html);
+  if (url.startsWith(channelHandle)) {
+    identifyChannel(html);
+    if (url.endsWith('/live') || url.endsWith('/streams')) {
+      const player = parseAssignedJSON(html, 'ytInitialPlayerResponse');
+      console.log('YouTube diagnostic:', url.endsWith('/live') ? 'live' : 'streams',
+        'redirect:', response.url.slice(0, 160),
+        'bytes:', html.length,
+        'player:', Boolean(player?.videoDetails?.videoId),
+        'isLiveNow:', player?.microformat?.playerMicroformatRenderer?.liveBroadcastDetails?.isLiveNow,
+        'isLiveContent:', player?.videoDetails?.isLiveContent);
+    }
+  }
   return html;
 }
 
