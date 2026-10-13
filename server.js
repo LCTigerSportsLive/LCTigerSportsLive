@@ -172,6 +172,12 @@ async function liveFromChannelVideos(html) {
   console.log('Channel candidate video IDs:', [...ids].join(',') || 'none');
   const results = await Promise.allSettled([...ids].map(async id => {
     const page = await getYoutubePage('https://www.youtube.com/watch?v=' + id);
+    if ([...ids].indexOf(id) < 3) {
+      const p = parseAssignedJSON(page, 'ytInitialPlayerResponse');
+      console.log('Watch video diagnostic:', id, 'status:', p?.playabilityStatus?.status,
+        'liveContent:', p?.videoDetails?.isLiveContent,
+        'liveNow:', p?.microformat?.playerMicroformatRenderer?.liveBroadcastDetails?.isLiveNow);
+    }
     return liveFromPlayer(page);
   }));
   console.log('Candidate verification:', results.length, 'live:', results.filter(r => r.status === 'fulfilled' && r.value).length, 'errors:', results.filter(r => r.status === 'rejected').slice(0, 4).map(r => r.reason?.message || String(r.reason)).join(' | '));
