@@ -215,6 +215,13 @@ async function checkLive() {
         catch (error) { console.warn('Live API check:', error.message); }
       }
       if (data.status === 'unavailable' || (!data.live && data.source !== 'youtube-api')) {
+        // The channel /live URL exposes the current player directly when broadcasting.
+        // Check it before channel listings to avoid unnecessary watch-page requests.
+        try {
+          const livePage = await getYoutubePage(channelHandle + '/live');
+          const activePlayer = liveFromPlayer(livePage);
+          if (activePlayer) data = activePlayer;
+        } catch (error) { console.warn('YouTube live page check:', error.message); }
         try {
           const streams = await getYoutubePage(channelHandle + '/streams');
           data = liveFromStreams(streams) || { live: false, status: 'unavailable' };
