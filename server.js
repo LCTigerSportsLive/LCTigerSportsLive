@@ -215,7 +215,7 @@ async function checkLive() {
         try { data = await liveFromOfficialApi(); }
         catch (error) { console.warn('Live API check:', error.message); }
       }
-      if (data.status === 'unavailable' || (!data.live && data.source !== 'youtube-api')) {
+      if (!data.live) {
         // The channel /live URL exposes the current player directly when broadcasting.
         // Check it before channel listings to avoid unnecessary watch-page requests.
         try {
@@ -258,7 +258,7 @@ async function checkLive() {
     else if (lastConfirmedLive.data && Date.now() < lastConfirmedLive.expires)
       data = { ...lastConfirmedLive.data, source: 'recently-confirmed' };
     // YouTube Data API search consumes quota; poll less frequently when it is used.
-    const ttl = data.source === 'youtube-api' ? 15 * 60 * 1000 : data.live ? 30000 : 45000;
+    const ttl = data.live ? 30000 : 45000;
     liveCache = { data, expires: Date.now() + ttl };
     console.log('Live check:', data.status, data.source || 'unavailable', data.videoId || '');
     return data;
