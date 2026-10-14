@@ -157,6 +157,25 @@ async function liveFromOfficialApi() {
   const response = await fetch(query, { signal: AbortSignal.timeout(8000) });
   if (!response.ok) throw new Error('YouTube Data API HTTP ' + response.status);
   const result = await response.json();
+  console.log('YouTube API live search count:', (result.items || []).length);
+  // Diagnostic only: inspect the supplied broadcast, never use it to select the player.
+  if (validId.test(process.env.YOUTUBE_DIAGNOSTIC_VIDEO_ID || '')) {
+    try {
+      const check = new URL('https://www.googleapis.com/youtube/v3/videos');
+      check.searchParams.set('part', 'snippet,liveStreamingDetails,status');
+      check.searchParams.set('id', process.env.YOUTUBE_DIAGNOSTIC_VIDEO_ID);
+      check.searchParams.set('key', process.env.YOUTUBE_API_KEY);
+      const response = await fetch(check, { signal: AbortSignal.timeout(8000) });
+      const details = await response.json();
+      const video = details.items?.[0];
+      console.log('Supplied video API diagnostic:', response.status,
+        'items:', details.items?.length || 0,
+        'broadcast:', video?.snippet?.liveBroadcastContent || 'none',
+        'privacy:', video?.status?.privacyStatus || 'unavailable',
+        'started:', Boolean(video?.liveStreamingDetails?.actualStartTime),
+        'ended:', Boolean(video?.liveStreamingDetails?.actualEndTime));
+    } catch (error) { console.warn('Supplied video diagnostic error:', error.message); }
+  }
   const found = (result.items || []).find(v => validId.test(v.id?.videoId || '') && v.snippet?.liveBroadcastContent === 'live');
   return found ? { live: true, status: 'live', videoId: found.id.videoId, title: found.snippet.title, source: 'youtube-api' } : { live: false, status: 'offline', source: 'youtube-api' };
 }
