@@ -166,6 +166,38 @@ async function liveFromOfficialApi() {
   return data;
 }
 
+async function liveFromChannelVideoMetadata(html) {
+  if (!process.env.YOUTUBE_API_KEY) return null;
+  const initial = parseAssignedJSON(html, 'ytInitialData');
+  if (!initial) return null;
+  const ids = new Set();
+  const stack = [initial];
+  let scanned = 0;
+  while (stack.length && ids.size < 30 && scanned++ < 60000) {
+    const node = stack.pop();
+    if (!node || typeof node !== 'object') continue;
+    const id = node.videoRenderer?.videoId || node.gridVideoRenderer?.videoId ||
+      node.lockupViewModel?.contentId;
+    if (validId.test(id || '')) ids.add(id);
+    for (const value of Object.values(node))
+      if (value && typeof value === 'object') stack.push(value);
+  }
+  if (!ids.size) return null;
+  const url = new URL('https://www.googleapis.com/youtube/v3/videos');
+  url.searchParams.set('part', 'snippet,liveStreamingDetails');
+  url.searchParams.set('id', [...ids].join(','));
+  url.searchParams.set('key', process.env.YOUTUBE_API_KEY);
+  const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  if (!response.ok) throw new Error('YouTube video status HTTP ' + response.status);
+  const result = await response.json();
+  const live = (result.items || []).find(v => v.snippet?.channelId === channelId &&
+    v.snippet?.liveBroadcastContent === 'live' &&
+    v.liveStreamingDetails?.actualStartTime && !v.liveStreamingDetails?.actualEndTime);
+  console.log('Video metadata live check:', ids.size, 'candidates,', live?.id || 'none');
+  return live ? { live: true, status: 'live', videoId: live.id,
+    title: live.snippet.title || 'Tiger Sports Live broadcast', source: 'youtube-video-metadata' } : null;
+}
+
 async function liveFromChannelVideos(html) {
   const initial = parseAssignedJSON(html, 'ytInitialData');
   if (!initial) return null;
@@ -241,6 +273,12 @@ async function checkLive() {
         if (!data.live) try {
           const streams = await getYoutubePage(channelHandle + '/streams');
           data = liveFromStreams(streams) || { live: false, status: 'unavailable' };
+          if (!data.live && process.env.YOUTUBE_API_KEY) {
+            try {
+              const verified = await liveFromChannelVideoMetadata(streams);
+              if (verified) data = verified;
+            } catch (error) { console.warn('YouTube video metadata check:', error.message); }
+          }
         } catch (error) { console.warn('YouTube streams check:', error.message); }
         if (!data.live) {
           try {
