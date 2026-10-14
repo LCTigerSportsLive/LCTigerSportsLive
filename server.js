@@ -162,7 +162,7 @@ async function liveFromOfficialApi() {
   console.log('YouTube API live search count:', (result.items || []).length);
   const found = (result.items || []).find(v => validId.test(v.id?.videoId || '') && v.snippet?.liveBroadcastContent === 'live');
   const data = found ? { live: true, status: 'live', videoId: found.id.videoId, title: found.snippet.title, source: 'youtube-api' } : { live: false, status: 'offline', source: 'youtube-api' };
-  officialApiCache = { data, expires: Date.now() + 15 * 60 * 1000 };
+  officialApiCache = { data, expires: Date.now() + 20 * 60 * 1000 };
   return data;
 }
 
