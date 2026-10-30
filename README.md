@@ -1,16 +1,40 @@
-## Hi there 👋
+# Tiger Sports Live
 
-<!--
-**LCTigerSportsLive/LCTigerSportsLive** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+Liberty Center Tigers live sports website, deployed from the `main` branch to Railway.
 
-Here are some ideas to get you started:
+## Run locally
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+- Node.js 20 or newer
+- `npm start` starts the site on `PORT` (default: 3000)
+- `npm test` runs dependency-free HTTP smoke tests
+
+## Public endpoints
+
+- `/` — website
+- `/api/live` — best-effort YouTube live broadcast detection; status may be `unavailable` when upstream checks fail
+- `/api/health` (also `/health`) — independent liveness check; no YouTube dependency
+- `/api/v1/teams` — versioned, read-only team directory in `public/data/teams.json`
+
+The website currently has static roster pages. The team directory is a first step toward a shared API for Android and iOS; roster details, scores, and schedules are **not yet available through the API**.
+
+## Railway environment variables
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `PORT` | No | Assigned automatically by Railway |
+| `YOUTUBE_CHANNEL_ID` | Recommended | Known channel ID to avoid channel resolution ambiguity |
+| `YOUTUBE_API_KEY` | Optional but recommended | Additional YouTube verification; keep this secret in Railway |
+| `LIVE_VIDEO_ID` | Optional | Temporary override for an active broadcast |
+
+Never commit API keys or other secrets to GitHub. The fallback YouTube page detection can operate without an API key but is not guaranteed to detect every live broadcast.
+
+## Mobile roadmap
+
+Maintain the Node.js backend as the shared data source. Build Android and iOS clients against versioned endpoints for teams, games, schedules, and stream state. Add authentication and notification infrastructure only when needed.
+
+## Deployment checks
+
+1. Railway deployment reaches SUCCESS.
+2. `/api/health` returns `{"status":"ok"}` (plus other fields).
+3. Homepage, logo, `/api/v1/teams`, and `/api/live` respond.
+4. Test livestream detection during a **real active broadcast**; an offline response alone does not prove detection works.

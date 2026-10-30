@@ -311,6 +311,22 @@ async function checkLive() {
 
 http.createServer(async (req, res) => {
   const pathname = (req.url || '/').split('?')[0];
+  // Lightweight liveness check: does not depend on YouTube availability.
+  if (pathname === '/api/health' || pathname === '/health') {
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+    return res.end(JSON.stringify({ status: 'ok', service: 'tiger-sports-live', uptimeSeconds: Math.floor(process.uptime()) }));
+  }
+  // Stable, read-only team directory for future iOS and Android clients.
+  if (pathname === '/api/v1/teams') {
+    return fs.readFile(path.join(__dirname, 'public', 'data', 'teams.json'), (error, bytes) => {
+      if (error) {
+        res.writeHead(503, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+        return res.end(JSON.stringify({ error: 'Team directory temporarily unavailable' }));
+      }
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=300' });
+      res.end(bytes);
+    });
+  }
   if (pathname === '/api/live') {
     const data = await checkLive();
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });

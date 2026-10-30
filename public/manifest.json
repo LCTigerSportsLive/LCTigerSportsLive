@@ -1,1 +1,17 @@
-{"name":"Tiger Sports Live","short_name":"Tiger Sports Live","start_url":"/","display":"standalone","background_color":"#0c0c0d","theme_color":"#111111","description":"Liberty Center Tigers live sports coverage, videos, schedules and scores."}
+{
+  "name": "Tiger Sports Live",
+  "short_name": "Tiger Sports Live",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0c0c0d",
+  "theme_color": "#111111",
+  "description": "Liberty Center Tigers live sports coverage, videos, schedules and scores.",
+  "icons": [
+    {
+      "src": "/tiger-sports-live-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

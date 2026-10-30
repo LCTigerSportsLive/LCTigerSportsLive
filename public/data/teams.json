@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "teams": [
+    {
+      "id": "football",
+      "name": "Football",
+      "season": 2026,
+      "rosterUrl": "/football-roster.html",
+      "rosterStatus": "available"
+    },
+    {
+      "id": "boys-soccer",
+      "name": "Boys Soccer",
+      "season": 2026,
+      "rosterUrl": "/boys-soccer-roster.html",
+      "rosterStatus": "available"
+    },
+    {
+      "id": "girls-soccer",
+      "name": "Girls Soccer",
+      "season": 2026,
+      "rosterUrl": "/girls-soccer-roster.html",
+      "rosterStatus": "available"
+    },
+    {
+      "id": "girls-volleyball",
+      "name": "Girls Volleyball",
+      "season": 2026,
+      "rosterUrl": "/girls-volleyball-roster.html",
+      "rosterStatus": "available"
+    },
+    {
+      "id": "basketball",
+      "name": "Basketball",
+      "rosterUrl": null,
+      "rosterStatus": "coming-soon"
+    },
+    {
+      "id": "baseball",
+      "name": "Baseball",
+      "rosterUrl": null,
+      "rosterStatus": "coming-soon"
+    },
+    {
+      "id": "softball",
+      "name": "Softball",
+      "rosterUrl": null,
+      "rosterStatus": "coming-soon"
+    },
+    {
+      "id": "track",
+      "name": "Track",
+      "rosterUrl": null,
+      "rosterStatus": "coming-soon"
+    }
+  ]
+}
