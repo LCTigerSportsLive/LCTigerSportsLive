@@ -308,7 +308,7 @@ async function liveFromChannelVideos(html) {
 async function liveFromRecentFeed() {
   if (!channelIdPattern.test(channelId || '') || !process.env.YOUTUBE_API_KEY) return null;
   const feed = await getYoutubePage('https://www.youtube.com/feeds/videos.xml?channel_id=' + channelId);
-  const ids = [...feed.matchAll(/<yt:videoId>([A-Za-z0-9_-]{11})<\\/yt:videoId>/g)]
+  const ids = [...feed.matchAll(/<yt:videoId>([A-Za-z0-9_-]{11})/g)]
     .slice(0, 15).map(match => match[1]);
   if (!ids.length) return null;
   return liveFromMetadata(await getVideoMetadata(ids), 'recent-feed');
