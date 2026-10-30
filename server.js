@@ -6,6 +6,7 @@ const port = process.env.PORT || 3000;
 const types = { '.html':'text/html', '.css':'text/css', '.js':'text/javascript', '.json':'application/json', '.svg':'image/svg+xml', '.webp':'image/webp' };
 const channelHandle = 'https://www.youtube.com/@LCTigerSportsLive';
 let channelId = process.env.YOUTUBE_CHANNEL_ID || null;
+let channelPinnedByKnownVideo = false;
 const channelIdPattern = /^UC[A-Za-z0-9_-]{22}$/;
 
 function identifyChannel(html) {
@@ -19,7 +20,7 @@ function identifyChannel(html) {
     const id = pattern.exec(html)?.[1];
     if (id && channelIdPattern.test(id)) {
       if (channelId !== id) console.log('Resolved YouTube channel from @LCTigerSportsLive:', id);
-      channelId = id;
+      if (!channelPinnedByKnownVideo || channelId === id) channelId = id;
       return id;
     }
   }
@@ -28,7 +29,6 @@ function identifyChannel(html) {
 const validId = /^[A-Za-z0-9_-]{11}$/;
 let liveCache = { expires: 0, data: { live: false, status: 'checking' } };
 let liveRequest = null;
-let lastConfirmedLive = { data: null, expires: 0 };
 let officialApiCache = { data: null, expires: 0 };
 
 function parseAssignedJSON(html, name) {
@@ -174,6 +174,7 @@ async function liveFromKnownVideo() {
       channelId !== video.snippet.channelId) {
     console.warn('Known video belongs to a different YouTube channel; updating runtime channel ID');
     channelId = video.snippet.channelId;
+    channelPinnedByKnownVideo = true;
     uploadsPlaylistId = null;
     uploadsCache = { expires: 0, data: null };
     officialApiCache = { data: null, expires: 0 };
@@ -377,11 +378,8 @@ async function checkLive() {
           } catch (error) { console.warn('YouTube recent feed check:', error.message); }
         }
     }
-    // YouTube intermittently serves a channel listing even while the stream is live.
-    // Keep the most recently verified player for five minutes rather than flickering offline.
-    if (data.live) lastConfirmedLive = { data, expires: Date.now() + 5 * 60 * 1000 };
-    else if (lastConfirmedLive.data && Date.now() < lastConfirmedLive.expires)
-      data = { ...lastConfirmedLive.data, source: 'recently-confirmed' };
+    // Never preserve a previously live video when the latest verification says offline.
+    // The short response cache below limits flicker without showing ended games as live.
     // YouTube Data API search consumes quota; poll less frequently when it is used.
     const ttl = data.live ? 30000 : 45000;
     liveCache = { data, expires: Date.now() + ttl };
