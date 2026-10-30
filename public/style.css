@@ -34,3 +34,17 @@ nav{justify-content:space-evenly;align-items:stretch}
 nav a{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:7px 2px;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",system-ui,sans-serif;font-size:24px;line-height:1.1}
 nav span{font-family:Inter,system-ui,sans-serif;font-size:10px;font-weight:700;margin-top:0;line-height:1.2}
 nav a.active{background:#29120e;border-top:2px solid var(--orange);padding-top:5px}
+
+/* Press Row live basketball scores inside the existing Game Day card. */
+.pressrow-panel{margin-top:18px;padding-top:18px;border-top:1px solid #4b2a15}
+.pressrow-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.pressrow-panel-head h3{margin:6px 0;font-size:18px}
+.pressrow-panel-head p,.pressrow-status,.pressrow-embed-note{font-size:13px;line-height:1.5;color:#b7b7b7;margin:6px 0}
+.pressrow-label{font-size:28px}
+.pressrow-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.pressrow-open,.pressrow-toggle{display:inline-block;padding:12px 14px;border-radius:10px;font-size:12px;font-weight:900;text-decoration:none;cursor:pointer}
+.pressrow-open{background:var(--orange);color:#050505}
+.pressrow-toggle{background:#1a1a1a;border:1px solid var(--orange);color:var(--orange);font-family:inherit}
+.pressrow-frame{display:block;width:100%;height:540px;margin-top:14px;border:1px solid #4b2a15;border-radius:10px;background:#fff}
+.pressrow-open[hidden],.pressrow-toggle[hidden],.pressrow-frame[hidden],.pressrow-embed-note[hidden]{display:none}
+@media(max-width:520px){.pressrow-frame{height:580px}.pressrow-open,.pressrow-toggle{flex:1;text-align:center}}

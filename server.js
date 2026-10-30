@@ -327,6 +327,20 @@ http.createServer(async (req, res) => {
       res.end(bytes);
     });
   }
+  // Press Row fan-page URL is configured per game in Railway; no scoring credentials are exposed.
+  if (pathname === '/api/v1/pressrow') {
+    const raw = process.env.PRESSROW_LIVE_URL || '';
+    let url = null;
+    try {
+      const candidate = new URL(raw);
+      if (candidate.protocol === 'https:' &&
+          candidate.hostname === 'hoops.pressrowapps.com' &&
+          /^\\/live\\/[A-Za-z0-9._-]+\\/?$/.test(candidate.pathname) &&
+          !candidate.username && !candidate.password) url = candidate.toString();
+    } catch {}
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+    return res.end(JSON.stringify({ configured: Boolean(url), sport: 'basketball', provider: 'pressrow-hoops', url }));
+  }
   if (pathname === '/api/live') {
     const data = await checkLive();
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });

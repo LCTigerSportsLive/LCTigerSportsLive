@@ -13,7 +13,7 @@ test('health, teams, homepage and icon are served', async (t) => {
 
   const child = spawn(process.execPath, ['server.js'], {
     cwd: path.join(__dirname, '..'),
-    env: { ...process.env, PORT: String(port) },
+    env: { ...process.env, PORT: String(port), PRESSROW_LIVE_URL: 'https://hoops.pressrowapps.com/live/test-public-game' },
     stdio: 'ignore'
   });
   t.after(() => child.kill());
@@ -39,6 +39,13 @@ test('health, teams, homepage and icon are served', async (t) => {
   const directory = await teamsResponse.json();
   assert.equal(directory.schemaVersion, 1);
   assert.ok(directory.teams.some((team) => team.id === 'football' && team.rosterStatus === 'available'));
+
+  const pressrow = await fetch('http://127.0.0.1:' + port + '/api/v1/pressrow');
+  assert.equal(pressrow.status, 200);
+  const scoreLink = await pressrow.json();
+  assert.equal(scoreLink.provider, 'pressrow-hoops');
+  assert.equal(scoreLink.configured, true);
+  assert.equal(scoreLink.url, 'https://hoops.pressrowapps.com/live/test-public-game');
 
   const homepage = await fetch('http://127.0.0.1:' + port + '/');
   assert.equal(homepage.status, 200);

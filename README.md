@@ -38,3 +38,14 @@ Maintain the Node.js backend as the shared data source. Build Android and iOS cl
 2. `/api/health` returns `{"status":"ok"}` (plus other fields).
 3. Homepage, logo, `/api/v1/teams`, and `/api/live` respond.
 4. Test livestream detection during a **real active broadcast**; an offline response alone does not prove detection works.
+
+## Press Row Hoops fan-page integration
+
+Set `PRESSROW_LIVE_URL` as a Railway service variable to the **public fan page link** copied from Press Row Hoops → Broadcast → Live Fan Page. Example shape: `https://hoops.pressrowapps.com/live/<game-link>`.
+
+- `/api/v1/pressrow` returns the configured, validated public game URL (or `configured: false`).
+- The Game Day section shows a link to the public live scoring page and an optional in-page iframe.
+- If Press Row blocks iframe embedding, the direct link still works. Use the official embed code from the Press Row Broadcast dialog for full embed compatibility.
+- **This is a single-game link, not a permanent season-wide scoring feed.** Replace the Railway variable for each new game.
+- This does not yet provide structured scores, push notifications or Live Activities; those require a supported data API or data feed.
+- Do not place account passwords, private data-feed tokens or administrative URLs in `PRESSROW_LIVE_URL`.
