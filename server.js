@@ -134,6 +134,85 @@ function liveFromStreams(html) {
   return { live: false, status: 'offline', source: 'streams' };
 }
 
+// A known video is a discovery hint, never proof of a current live broadcast.
+// The YouTube Data API verifies the status so an ended broadcast cannot stay LIVE.
+function activeBroadcast(item, expectedChannel) {
+  if (!item || !validId.test(item.id || '') || !item.snippet) return false;
+  if (expectedChannel && item.snippet.channelId !== expectedChannel) return false;
+  return item.snippet.liveBroadcastContent === 'live' &&
+    !item.liveStreamingDetails?.actualEndTime;
+}
+
+async function getVideoMetadata(ids) {
+  if (!process.env.YOUTUBE_API_KEY || !ids.length) return [];
+  const url = new URL('https://www.googleapis.com/youtube/v3/videos');
+  url.searchParams.set('part', 'snippet,liveStreamingDetails');
+  url.searchParams.set('id', [...new Set(ids)].filter(id => validId.test(id)).slice(0, 50).join(','));
+  url.searchParams.set('key', process.env.YOUTUBE_API_KEY);
+  if (!url.searchParams.get('id')) return [];
+  const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  if (!response.ok) throw new Error('YouTube videos API HTTP ' + response.status);
+  return (await response.json()).items || [];
+}
+
+function liveFromMetadata(items, source) {
+  const item = items.find(video => activeBroadcast(video, channelId));
+  return item ? {
+    live: true, status: 'live', videoId: item.id,
+    title: item.snippet.title || 'Tiger Sports Live broadcast', source
+  } : null;
+}
+
+async function liveFromKnownVideo() {
+  const id = process.env.YOUTUBE_SEED_VIDEO_ID || process.env.LIVE_VIDEO_ID;
+  if (!validId.test(id || '') || !process.env.YOUTUBE_API_KEY) return null;
+  const items = await getVideoMetadata([id]);
+  const video = items.find(item => item.id === id);
+  // The broadcaster supplied this known game URL. Use its real channel ID
+  // when a stale channel setting points to a different channel.
+  if (video && channelIdPattern.test(video.snippet?.channelId || '') &&
+      channelId !== video.snippet.channelId) {
+    console.warn('Known video belongs to a different YouTube channel; updating runtime channel ID');
+    channelId = video.snippet.channelId;
+    uploadsPlaylistId = null;
+    uploadsCache = { expires: 0, data: null };
+    officialApiCache = { data: null, expires: 0 };
+  }
+  const live = liveFromMetadata(items, 'known-video-verified');
+  console.log('Known video check:', live ? 'live' : 'not-live', id);
+  return live;
+}
+
+let uploadsPlaylistId = null;
+let uploadsCache = { expires: 0, data: null };
+async function liveFromUploads() {
+  if (!process.env.YOUTUBE_API_KEY || !channelIdPattern.test(channelId || '')) return null;
+  if (Date.now() < uploadsCache.expires) return uploadsCache.data;
+  if (!uploadsPlaylistId) {
+    const url = new URL('https://www.googleapis.com/youtube/v3/channels');
+    url.searchParams.set('part', 'contentDetails');
+    url.searchParams.set('id', channelId);
+    url.searchParams.set('key', process.env.YOUTUBE_API_KEY);
+    const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!response.ok) throw new Error('YouTube channels API HTTP ' + response.status);
+    uploadsPlaylistId = (await response.json()).items?.[0]?.contentDetails?.relatedPlaylists?.uploads || null;
+  }
+  if (!uploadsPlaylistId) return null;
+  const url = new URL('https://www.googleapis.com/youtube/v3/playlistItems');
+  url.searchParams.set('part', 'contentDetails');
+  url.searchParams.set('playlistId', uploadsPlaylistId);
+  url.searchParams.set('maxResults', '30');
+  url.searchParams.set('key', process.env.YOUTUBE_API_KEY);
+  const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  if (!response.ok) throw new Error('YouTube uploads API HTTP ' + response.status);
+  const items = (await response.json()).items || [];
+  const ids = items.map(item => item.contentDetails?.videoId).filter(id => validId.test(id || ''));
+  const data = liveFromMetadata(await getVideoMetadata(ids), 'channel-uploads');
+  uploadsCache = { data, expires: Date.now() + 90000 };
+  console.log('Uploads live check:', ids.length, 'candidates,', data?.videoId || 'none');
+  return data;
+}
+
 async function liveFromOfficialApi() {
   if (!process.env.YOUTUBE_API_KEY) return null;
   if (officialApiCache.data && Date.now() < officialApiCache.expires) return officialApiCache.data;
@@ -226,17 +305,12 @@ async function liveFromChannelVideos(html) {
 }
 
 async function liveFromRecentFeed() {
-  if (!channelIdPattern.test(channelId || '')) return null;
+  if (!channelIdPattern.test(channelId || '') || !process.env.YOUTUBE_API_KEY) return null;
   const feed = await getYoutubePage('https://www.youtube.com/feeds/videos.xml?channel_id=' + channelId);
-  const ids = [...feed.matchAll(/<yt:videoId>([A-Za-z0-9_-]{11})<\/yt:videoId>/g)]
-    .slice(0, 6).map(match => match[1]);
+  const ids = [...feed.matchAll(/<yt:videoId>([A-Za-z0-9_-]{11})<\\/yt:videoId>/g)]
+    .slice(0, 15).map(match => match[1]);
   if (!ids.length) return null;
-  const results = await Promise.allSettled(ids.map(async id => {
-    const html = await getYoutubePage('https://www.youtube.com/watch?v=' + id);
-    const live = liveFromPlayer(html);
-    return live && live.videoId === id ? { ...live, source: 'recent-feed' } : null;
-  }));
-  return results.find(r => r.status === 'fulfilled' && r.value)?.value || null;
+  return liveFromMetadata(await getVideoMetadata(ids), 'recent-feed');
 }
 
 async function checkLive() {
@@ -244,15 +318,18 @@ async function checkLive() {
   if (liveRequest) return liveRequest;
   liveRequest = (async () => {
     let data = { live: false, status: 'unavailable' };
-    const override = process.env.LIVE_VIDEO_ID;
-    if (override && validId.test(override)) {
-      data = { live: true, status: 'live', videoId: override, title: 'Tiger Sports Live broadcast', source: 'manual' };
-    } else {
-      if (process.env.YOUTUBE_API_KEY) {
+    // First check the last known video, but only mark it live after API verification.
+    if (process.env.YOUTUBE_API_KEY) {
+      try {
+        const known = await liveFromKnownVideo();
+        if (known) data = known;
+      } catch (error) { console.warn('Known video verification:', error.message); }
+      if (!data.live) {
         try { data = await liveFromOfficialApi(); }
         catch (error) { console.warn('Live API check:', error.message); }
       }
-      if (!data.live) {
+    }
+    if (!data.live) {
         // The channel /live URL exposes the current player directly when broadcasting.
         // Check it before channel listings to avoid unnecessary watch-page requests.
         try {
@@ -289,11 +366,16 @@ async function checkLive() {
         }
         if (!data.live && channelIdPattern.test(channelId || '')) {
           try {
+            const uploads = await liveFromUploads();
+            if (uploads) data = uploads;
+          } catch (error) { console.warn('YouTube uploads check:', error.message); }
+        }
+        if (!data.live && channelIdPattern.test(channelId || '')) {
+          try {
             const recent = await liveFromRecentFeed();
             if (recent) data = recent;
           } catch (error) { console.warn('YouTube recent feed check:', error.message); }
         }
-      }
     }
     // YouTube intermittently serves a channel listing even while the stream is live.
     // Keep the most recently verified player for five minutes rather than flickering offline.
