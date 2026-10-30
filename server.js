@@ -335,7 +335,7 @@ http.createServer(async (req, res) => {
       const candidate = new URL(raw);
       if (candidate.protocol === 'https:' &&
           candidate.hostname === 'hoops.pressrowapps.com' &&
-          /^\\/live\\/[A-Za-z0-9._-]+\\/?$/.test(candidate.pathname) &&
+          candidate.pathname.startsWith('/live/') && /^[A-Za-z0-9._-]+$/.test(candidate.pathname.slice(6)) &&
           !candidate.username && !candidate.password) url = candidate.toString();
     } catch {}
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
