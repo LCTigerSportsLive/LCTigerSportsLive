@@ -24,7 +24,7 @@ The website currently has static roster pages. The team directory is a first ste
 | `PORT` | No | Assigned automatically by Railway |
 | `YOUTUBE_CHANNEL_ID` | Recommended | Known channel ID to avoid channel resolution ambiguity |
 | `YOUTUBE_API_KEY` | Optional but recommended | Additional YouTube verification; keep this secret in Railway |
-| `LIVE_VIDEO_ID` | Optional | Temporary override for an active broadcast |
+| `LIVE_VIDEO_ID` | Optional (legacy) | Known video ID hint; verified against YouTube API before showing LIVE |
 
 Never commit API keys or other secrets to GitHub. The fallback YouTube page detection can operate without an API key but is not guaranteed to detect every live broadcast.
 
@@ -49,3 +49,11 @@ Set `PRESSROW_LIVE_URL` as a Railway service variable to the **public fan page l
 - **This is a single-game link, not a permanent season-wide scoring feed.** Replace the Railway variable for each new game.
 - This does not yet provide structured scores, push notifications or Live Activities; those require a supported data API or data feed.
 - Do not place account passwords, private data-feed tokens or administrative URLs in `PRESSROW_LIVE_URL`.
+
+## Livestream detection (2026-10-30)
+
+- `YOUTUBE_SEED_VIDEO_ID` can hold the last broadcaster-supplied YouTube video ID as a **verified hint**, not a forced live override. The legacy `LIVE_VIDEO_ID` works the same way.
+- Every candidate is checked with the YouTube videos API for `liveBroadcastContent: live` and absence of an end timestamp. Ended games are never deliberately labeled live just because an override is set.
+- Detection also checks channel live redirects, public stream listings, the channel's latest uploads playlist, and the public RSS feed. The channel uploads and RSS candidates are verified through the YouTube API.
+- YouTube search results remain cached for 20 minutes to respect API quota, while cheaper discovery paths refresh within roughly 45–90 seconds.
+- **Limitation:** new unlisted or private videos may not appear in public channel listings or search. For fully automatic discovery of unlisted streams, the broadcaster needs an authenticated YouTube Live Streaming API integration or an event/URL push from the streaming workflow.
