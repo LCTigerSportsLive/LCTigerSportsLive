@@ -393,6 +393,13 @@ async function checkLive() {
 // Treat recent, in-period scorekeeper activity as an active game. The panel
 // stays hidden for stale, pregame, final or unavailable feeds.
 function pressrowGameActive(feed, now = Date.now()) {
+  // Hoops broadcasts expose an authoritative live flag and status.
+  // Do not infer a game from scores or from the presence of a JSON response.
+  if (feed && typeof feed === 'object' && !Array.isArray(feed) &&
+      (typeof feed.live === 'boolean' || 'asOf' in feed)) {
+    const state = String(feed.status || '').trim().toLowerCase();
+    return feed.live === true && /^(live|in.progress|in_progress|active)$/.test(state);
+  }
   const snapshot = feed?.snapshot;
   if (!snapshot || typeof snapshot !== 'object') return false;
   const state = String(snapshot.gameStatus ?? snapshot.status ?? feed.gameStatus ?? feed.status ?? '').trim().toLowerCase();
@@ -456,7 +463,7 @@ async function getPressrowFeed() {
       console.log('Press Row feed connected:', Array.isArray(feed) ? 'array' : Object.keys(feed).slice(0, 20).join(', '));
       if (!Array.isArray(feed)) for (const [key, value] of Object.entries(feed).slice(0, 16)) console.log('Press Row schema', key, Array.isArray(value) ? 'array[' + value.length + ']' : value && typeof value === 'object' ? Object.keys(value).slice(0, 25).join(',') : typeof value);
       for (const side of ['homeTeam', 'awayTeam']) if (feed.snapshot?.[side] && typeof feed.snapshot[side] === 'object') console.log('Press Row team schema', side, Object.keys(feed.snapshot[side]).slice(0, 20).join(','));
-      console.log('Press Row activity fields:', JSON.stringify({status: feed.status, gameStatus: feed.gameStatus, updatedAt: feed.updatedAt, snapshotStatus: feed.snapshot?.status, snapshotGameStatus: feed.snapshot?.gameStatus, snapshotPeriod: feed.snapshot?.period, snapshotQuarter: feed.snapshot?.quarter, snapshotClock: feed.snapshot?.gameTime}));
+      console.log('Press Row feed status:', { provider: data.provider, activeGame, status: feed.status, live: feed.live });
       return data;
     } catch (error) {
       console.warn('Press Row Gridiron fetch:', error.message);
