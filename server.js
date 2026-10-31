@@ -389,6 +389,54 @@ async function checkLive() {
   try { return await liveRequest; } finally { liveRequest = null; }
 }
 
+// Press Row Gridiron feed: fetch server-side so the bearer-like feed URL is not
+// embedded in public HTML/JavaScript. Cache briefly to limit provider traffic.
+let pressrowFeedCache = { expires: 0, data: null };
+let pressrowFeedRequest = null;
+function configuredPressrowFeed() {
+  const raw = process.env.PRESSROW_GRIDIRON_FEED_URL;
+  if (!raw) return null;
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== 'https:' || url.hostname !== 'gridiron.pressrowapps.com' ||
+        !/^\\/api\\/broadcast\\/feed\\/[A-Za-z0-9._-]+\\/data\\.json$/.test(url.pathname) ||
+        url.search || url.hash || url.username || url.password) return null;
+    return url.toString();
+  } catch { return null; }
+}
+async function getPressrowFeed() {
+  const url = configuredPressrowFeed();
+  if (!url) return { configured: false, connected: false, error: 'Feed not configured' };
+  if (pressrowFeedCache.data && Date.now() < pressrowFeedCache.expires) return pressrowFeedCache.data;
+  if (pressrowFeedRequest) return pressrowFeedRequest;
+  pressrowFeedRequest = (async () => {
+    try {
+      const response = await fetch(url, {
+        headers: { 'Accept': 'application/json' },
+        signal: AbortSignal.timeout(8000)
+      });
+      if (!response.ok) throw new Error('Press Row HTTP ' + response.status);
+      const declaredSize = Number(response.headers.get('content-length') || 0);
+      if (declaredSize > 1024 * 1024) throw new Error('Feed too large');
+      const raw = await response.text();
+      if (raw.length > 1024 * 1024) throw new Error('Feed too large');
+      const feed = JSON.parse(raw);
+      if (!feed || typeof feed !== 'object') throw new Error('Unexpected feed format');
+      const data = { configured: true, connected: true, provider: 'pressrow-gridiron', sport: 'football',
+        fetchedAt: new Date().toISOString(), feed };
+      pressrowFeedCache = { data, expires: Date.now() + 15000 };
+      console.log('Press Row Gridiron feed connected:', Array.isArray(feed) ? 'array' : Object.keys(feed).slice(0, 20).join(', '));
+      return data;
+    } catch (error) {
+      console.warn('Press Row Gridiron fetch:', error.message);
+      // Avoid displaying an old score as live after the upstream connection fails.
+      return { configured: true, connected: false, provider: 'pressrow-gridiron', sport: 'football',
+        error: 'Live score feed temporarily unavailable' };
+    }
+  })();
+  try { return await pressrowFeedRequest; } finally { pressrowFeedRequest = null; }
+}
+
 http.createServer(async (req, res) => {
   const pathname = (req.url || '/').split('?')[0];
   // Lightweight liveness check: does not depend on YouTube availability.
@@ -420,6 +468,15 @@ http.createServer(async (req, res) => {
     } catch {}
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
     return res.end(JSON.stringify({ configured: Boolean(url), sport: 'basketball', provider: 'pressrow-hoops', url }));
+  }
+  if (pathname === '/api/v1/pressrow/gridiron') {
+    const data = await getPressrowFeed();
+    res.writeHead(data.connected ? 200 : 503, {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': 'no-store',
+      'X-Content-Type-Options': 'nosniff'
+    });
+    return res.end(JSON.stringify(data));
   }
   if (pathname === '/api/live') {
     const data = await checkLive();
