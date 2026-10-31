@@ -417,12 +417,15 @@ function pressrowGameActive(feed, now = Date.now()) {
 let pressrowFeedCache = { expires: 0, data: null };
 let pressrowFeedRequest = null;
 function configuredPressrowFeed() {
-  const raw = process.env.PRESSROW_GRIDIRON_FEED_URL;
+  const raw = process.env.PRESSROW_HOOPS_FEED_URL || process.env.PRESSROW_GRIDIRON_FEED_URL;
   if (!raw) return null;
   try {
     const url = new URL(raw);
-    if (url.protocol !== 'https:' || url.hostname !== 'gridiron.pressrowapps.com' ||
-        !new RegExp('^/api/broadcast/feed/[A-Za-z0-9._-]+/data[.]json$').test(url.pathname) ||
+    const gridiron = url.hostname === 'gridiron.pressrowapps.com' &&
+      /^\/api\/broadcast\/feed\/[A-Za-z0-9._-]+\/data[.]json$/.test(url.pathname);
+    const hoops = url.hostname === 'pressrowhoops.com' &&
+      /^\/api\/broadcast\/live\/[A-Za-z0-9_-]+[.]json$/.test(url.pathname);
+    if (url.protocol !== 'https:' || (!gridiron && !hoops) ||
         url.search || url.hash || url.username || url.password) return null;
     return url.toString();
   } catch { return null; }
@@ -446,17 +449,19 @@ async function getPressrowFeed() {
       const feed = JSON.parse(raw);
       if (!feed || typeof feed !== 'object') throw new Error('Unexpected feed format');
       const activeGame = pressrowGameActive(feed);
-      const data = { configured: true, connected: true, provider: 'pressrow-gridiron', sport: 'football',
+      const hoops = new URL(url).hostname === 'pressrowhoops.com';
+      const data = { configured: true, connected: true, provider: hoops ? 'pressrow-hoops' : 'pressrow-gridiron', sport: hoops ? 'basketball' : 'football',
         fetchedAt: new Date().toISOString(), activeGame, feed };
       pressrowFeedCache = { data, expires: Date.now() + 15000 };
-      console.log('Press Row Gridiron feed connected:', Array.isArray(feed) ? 'array' : Object.keys(feed).slice(0, 20).join(', '));
+      console.log('Press Row feed connected:', Array.isArray(feed) ? 'array' : Object.keys(feed).slice(0, 20).join(', '));
       if (!Array.isArray(feed)) for (const [key, value] of Object.entries(feed).slice(0, 16)) console.log('Press Row schema', key, Array.isArray(value) ? 'array[' + value.length + ']' : value && typeof value === 'object' ? Object.keys(value).slice(0, 25).join(',') : typeof value);
       for (const side of ['homeTeam', 'awayTeam']) if (feed.snapshot?.[side] && typeof feed.snapshot[side] === 'object') console.log('Press Row team schema', side, Object.keys(feed.snapshot[side]).slice(0, 20).join(','));
+      console.log('Press Row activity fields:', JSON.stringify({status: feed.status, gameStatus: feed.gameStatus, updatedAt: feed.updatedAt, snapshotStatus: feed.snapshot?.status, snapshotGameStatus: feed.snapshot?.gameStatus, snapshotPeriod: feed.snapshot?.period, snapshotQuarter: feed.snapshot?.quarter, snapshotClock: feed.snapshot?.gameTime}));
       return data;
     } catch (error) {
       console.warn('Press Row Gridiron fetch:', error.message);
       // Avoid displaying an old score as live after the upstream connection fails.
-      return { configured: true, connected: false, provider: 'pressrow-gridiron', sport: 'football',
+      return { configured: true, connected: false, provider: 'pressrow',
         error: 'Live score feed temporarily unavailable' };
     }
   })();
