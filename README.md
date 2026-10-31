@@ -72,3 +72,9 @@ Set `PRESSROW_LIVE_URL` as a Railway service variable to the **public fan page l
 The football scoring panel starts hidden and appears only when `/api/v1/pressrow/gridiron` reports `activeGame: true`. The server uses the Press Row snapshot's quarter, optional game-status field, and `updatedAt` timestamp to detect recent scorekeeper activity. Pregame, final, unavailable, or stale (more than 25 minutes without a feed update) snapshots hide the entire section. The browser checks every 15 seconds and hides the section again when the game becomes inactive.
 
 **Provider limitation:** This Gridiron JSON format does not currently expose a verified game-running flag. Recent updates are an activity heuristic, so an ended game could remain visible for up to 25 minutes unless Press Row supplies a final status. For exact start/end detection, request an official game status field from the Press Row programmer.
+
+## Press Row Hoops live basketball feed
+
+The current Game Day Press Row panel uses `PRESSROW_HOOPS_FEED_URL` on Railway, pointing to an HTTPS `pressrowhoops.com/api/broadcast/live/...json` feed. The browser never contains the feed URL. The existing `/api/v1/pressrow/gridiron` API path is retained for compatibility, but returns the Hoops feed with `sport: "basketball"` and `provider: "pressrow-hoops"` when the Hoops environment variable is configured. The older Gridiron configuration remains as a fallback.
+
+Unlike the Gridiron feed, Press Row Hoops provides `live` (boolean) and `status`. The scoreboard stays completely hidden unless `live === true` and `status` is a recognized live state. It refreshes every 15 seconds while visible. It displays basketball team names, scores, period, game clock, and shot clock, using `asOf` for the last data update. The YouTube player is unaffected. A new broadcast may require changing `PRESSROW_HOOPS_FEED_URL`.
