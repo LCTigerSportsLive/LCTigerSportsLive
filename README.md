@@ -66,3 +66,9 @@ Set `PRESSROW_LIVE_URL` as a Railway service variable to the **public fan page l
 - The prior basketball fan-page integration is retained at `/api/v1/pressrow` and the `PRESSROW_LIVE_URL` variable, but is no longer displayed in Game Day.
 - This feed appears to be a specific broadcast's snapshot. To switch games, update `PRESSROW_GRIDIRON_FEED_URL` with the next broadcast feed URL.
 - If the feed cannot be reached, the app displays an unavailable status rather than inventing or displaying stale scores as live.
+
+## Conditional Press Row scoreboard visibility
+
+The football scoring panel starts hidden and appears only when `/api/v1/pressrow/gridiron` reports `activeGame: true`. The server uses the Press Row snapshot's quarter, optional game-status field, and `updatedAt` timestamp to detect recent scorekeeper activity. Pregame, final, unavailable, or stale (more than 25 minutes without a feed update) snapshots hide the entire section. The browser checks every 15 seconds and hides the section again when the game becomes inactive.
+
+**Provider limitation:** This Gridiron JSON format does not currently expose a verified game-running flag. Recent updates are an activity heuristic, so an ended game could remain visible for up to 25 minutes unless Press Row supplies a final status. For exact start/end detection, request an official game status field from the Press Row programmer.
