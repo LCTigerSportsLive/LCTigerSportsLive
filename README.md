@@ -57,3 +57,12 @@ Set `PRESSROW_LIVE_URL` as a Railway service variable to the **public fan page l
 - Detection also checks channel live redirects, public stream listings, the channel's latest uploads playlist, and the public RSS feed. The channel uploads and RSS candidates are verified through the YouTube API.
 - YouTube search results remain cached for 20 minutes to respect API quota, while cheaper discovery paths refresh within roughly 45–90 seconds.
 - **Limitation:** new unlisted or private videos may not appear in public channel listings or search. For fully automatic discovery of unlisted streams, the broadcaster needs an authenticated YouTube Live Streaming API integration or an event/URL push from the streaming workflow.
+
+## Press Row Gridiron football scoring feed
+
+- Set the full `PRESSROW_GRIDIRON_FEED_URL` as a **Railway service environment variable**, not in client-side JavaScript or GitHub. It must be a `https://gridiron.pressrowapps.com/api/broadcast/feed/.../data.json` URL.
+- `GET /api/v1/pressrow/gridiron` fetches the JSON feed server-side and returns a short-lived, cache-controlled proxy response. It does not reveal the original feed URL.
+- The Game Day section displays football teams, scores, quarter, game clock and field situation from the Press Row `snapshot` object. It refreshes approximately every 15 seconds while the page is visible.
+- The prior basketball fan-page integration is retained at `/api/v1/pressrow` and the `PRESSROW_LIVE_URL` variable, but is no longer displayed in Game Day.
+- This feed appears to be a specific broadcast's snapshot. To switch games, update `PRESSROW_GRIDIRON_FEED_URL` with the next broadcast feed URL.
+- If the feed cannot be reached, the app displays an unavailable status rather than inventing or displaying stale scores as live.
