@@ -389,6 +389,29 @@ async function checkLive() {
   try { return await liveRequest; } finally { liveRequest = null; }
 }
 
+// Press Row's feed contains a snapshot, not a definitive game-running flag.
+// Treat recent, in-period scorekeeper activity as an active game. The panel
+// stays hidden for stale, pregame, final or unavailable feeds.
+function pressrowGameActive(feed, now = Date.now()) {
+  const snapshot = feed?.snapshot;
+  if (!snapshot || typeof snapshot !== 'object') return false;
+  const state = String(snapshot.gameStatus ?? snapshot.status ?? feed.gameStatus ?? feed.status ?? '').trim().toLowerCase();
+  if (/final|finish|complet|end|cancel|postpon|suspend|pregame|pre-game|scheduled|not.started/.test(state)) return false;
+  const quarter = Number(snapshot.quarter);
+  if (!Number.isInteger(quarter) || quarter < 1 || quarter > 20) return false;
+  const rawUpdated = feed.updatedAt;
+  const numeric = Number(rawUpdated);
+  const timestamp = Number.isFinite(numeric) && numeric > 0
+    ? (numeric < 1e11 ? numeric * 1000 : numeric)
+    : Date.parse(rawUpdated);
+  if (!Number.isFinite(timestamp)) return false;
+  const age = now - timestamp;
+  if (age < -2 * 60 * 1000 || age > 25 * 60 * 1000) return false;
+  // A recently edited scoreboard can be active even if the clock is paused
+  // for halftime, a timeout or overtime.
+  return true;
+}
+
 // Press Row Gridiron feed: fetch server-side so the bearer-like feed URL is not
 // embedded in public HTML/JavaScript. Cache briefly to limit provider traffic.
 let pressrowFeedCache = { expires: 0, data: null };
@@ -422,20 +445,9 @@ async function getPressrowFeed() {
       if (raw.length > 1024 * 1024) throw new Error('Feed too large');
       const feed = JSON.parse(raw);
       if (!feed || typeof feed !== 'object') throw new Error('Unexpected feed format');
-      console.log('Press Row activity diagnostic:', JSON.stringify({
-        updatedAt: feed.updatedAt,
-        revision: feed.revision,
-        quarter: feed.snapshot?.quarter,
-        gameTime: feed.snapshot?.gameTime,
-        playClockTime: feed.snapshot?.playClockTime,
-        down: feed.snapshot?.down,
-        distance: feed.snapshot?.distance,
-        homeScore: feed.snapshot?.homeScore,
-        awayScore: feed.snapshot?.awayScore,
-        additionalSnapshotKeys: feed.snapshot && typeof feed.snapshot === 'object' ? Object.keys(feed.snapshot).slice(25, 70) : []
-      }));
+      const activeGame = pressrowGameActive(feed);
       const data = { configured: true, connected: true, provider: 'pressrow-gridiron', sport: 'football',
-        fetchedAt: new Date().toISOString(), feed };
+        fetchedAt: new Date().toISOString(), activeGame, feed };
       pressrowFeedCache = { data, expires: Date.now() + 15000 };
       console.log('Press Row Gridiron feed connected:', Array.isArray(feed) ? 'array' : Object.keys(feed).slice(0, 20).join(', '));
       if (!Array.isArray(feed)) for (const [key, value] of Object.entries(feed).slice(0, 16)) console.log('Press Row schema', key, Array.isArray(value) ? 'array[' + value.length + ']' : value && typeof value === 'object' ? Object.keys(value).slice(0, 25).join(',') : typeof value);
