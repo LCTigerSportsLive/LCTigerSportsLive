@@ -9,6 +9,18 @@ function response(payload) {
 }
 global.fetch = async (input) => {
   const url = new URL(String(input));
+  if (url.hostname === 'pressrowhoops.com') {
+    return response({
+      asOf: new Date().toISOString(),
+      live: scenario === 'hoops-live',
+      status: scenario === 'hoops-final' ? 'final' : scenario === 'hoops-live' ? 'live' : 'scheduled',
+      hometeam: 'Liberty Center Tigers',
+      awayteam: 'Visiting Team',
+      homescore: 41, awayscore: 36,
+      period: 3, gameClock: '06:24', shotClock: '17',
+      useHalvesFormat: false
+    });
+  }
   if (url.hostname === 'gridiron.pressrowapps.com') {
     return response({
       title: 'Liberty Center Football',
