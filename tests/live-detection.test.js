@@ -71,7 +71,8 @@ async function getPressrowResponse(t, scenario) {
       NODE_OPTIONS: '--require=' + path.join(__dirname, 'mock-youtube.cjs'),
       YOUTUBE_API_KEY: 'test-only',
       YOUTUBE_CHANNEL_ID: 'UCHteYhHnv-6VrSc9ImSs62g',
-      PRESSROW_GRIDIRON_FEED_URL: 'https://gridiron.pressrowapps.com/api/broadcast/feed/test-token/data.json'
+      PRESSROW_GRIDIRON_FEED_URL: 'https://gridiron.pressrowapps.com/api/broadcast/feed/test-token/data.json',
+      PRESSROW_HOOPS_FEED_URL: scenario.startsWith('hoops-') ? 'https://pressrowhoops.com/api/broadcast/live/test-token.json' : ''
     },
     stdio: 'ignore'
   });
@@ -101,5 +102,18 @@ for (const scenario of ['pressrow-stale', 'pressrow-pregame', 'pressrow-final'])
     const result = await getPressrowResponse(t, scenario);
     assert.equal(result.connected, true);
     assert.equal(result.activeGame, false);
+  });
+}
+
+for (const [scenario, active] of [['hoops-live', true], ['hoops-final', false], ['hoops-scheduled', false]]) {
+  test('Press Row Hoops visibility follows provider live status: ' + scenario, async t => {
+    const result = await getPressrowResponse(t, scenario);
+    assert.equal(result.connected, true);
+    assert.equal(result.provider, 'pressrow-hoops');
+    assert.equal(result.sport, 'basketball');
+    assert.equal(result.activeGame, active);
+    assert.equal(result.feed.homescore, 41);
+    assert.equal(result.feed.awayscore, 36);
+    assert.equal(JSON.stringify(result).includes('test-token'), false);
   });
 }
