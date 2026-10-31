@@ -26,7 +26,7 @@
     for (const item of items) {
       if (items.length >= 20) break;
       if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
-      for (const k of ['game', 'scoreboard', 'data', 'payload', 'broadcast', 'state', 'gameState', 'gameData', 'live']) {
+      for (const k of ['snapshot', 'game', 'scoreboard', 'data', 'payload', 'broadcast', 'state', 'gameState', 'gameData', 'live']) {
         const child = field(item, [k]);
         if (child && typeof child === 'object' && !items.includes(child)) items.push(child);
       }
@@ -66,7 +66,7 @@
   }
   function teamName(team, items, side) {
     if (typeof team === 'string') return team;
-    const name = text(field(team, ['displayName', 'fullName', 'name', 'teamName', 'schoolName', 'school', 'abbreviation', 'shortName', 'nickname']));
+    const name = text(field(team, ['displayName', 'fullName', 'name', 'teamName', 'schoolName', 'school', 'abbreviation', 'shortName', 'nickname', 'team']));
     return name || text(fromAny(items, side === 'home'
       ? ['homeTeamName', 'homeName', 'homeSchool', 'home_team_name']
       : ['awayTeamName', 'visitorName', 'awayName', 'awaySchool', 'away_team_name']));
@@ -105,17 +105,18 @@
     put('pressrow-away-score', awayScore, '—');
     put('pressrow-home-score', homeScore, '—');
     const periodRaw = text(fromAny(items, ['quarter', 'currentQuarter', 'period', 'currentPeriod', 'gamePeriod']));
-    const clockRaw = text(fromAny(items, ['clock', 'gameClock', 'timeRemaining', 'periodClock', 'clockDisplay', 'timeLeft']));
+    const clockRaw = text(fromAny(items, ['clock', 'gameClock', 'timeRemaining', 'periodClock', 'clockDisplay', 'timeLeft', 'gameTime']));
     const state = text(fromAny(items, ['gameStatus', 'status', 'gamePhase', 'phase', 'gameState']));
     const down = text(fromAny(items, ['down', 'currentDown']));
     const distance = text(fromAny(items, ['distance', 'yardsToGo', 'toGo']));
-    const ballOn = text(fromAny(items, ['ballOn', 'yardLine', 'lineOfScrimmage']));
+    const ballOn = text(fromAny(items, ['ballOn', 'yardLineDisplay', 'yardLine', 'lineOfScrimmage']));
+    const downDistance = text(fromAny(items, ['downDistanceText']));
     const period = periodRaw && /^\\d+$/.test(periodRaw) ? 'Q' + periodRaw : periodRaw;
     detail('pressrow-period', period || state);
     detail('pressrow-clock', clockRaw);
     detail('pressrow-situation', [
-      down && distance ? down + ' & ' + distance : null,
-      ballOn ? 'Ball on ' + ballOn : null
+      downDistance || (down && distance ? down + ' & ' + distance : null),
+      ballOn ? (ballOn.toLowerCase().startsWith('ball') ? ballOn : 'Ball on ' + ballOn) : null
     ].filter(Boolean).join(' · '));
     const more = byId('pressrow-more');
     more.hidden = true;
