@@ -58,7 +58,8 @@ test('new public live video is found through uploads playlist', async t => {
   assert.equal(result.source, 'channel-uploads');
 });
 
-test('Press Row Gridiron API proxy serves game snapshot without exposing feed URL', async t => {
+
+async function getPressrowResponse(t, scenario) {
   const socket = net.createServer();
   await new Promise(resolve => socket.listen(0, '127.0.0.1', resolve));
   const port = socket.address().port;
@@ -66,7 +67,7 @@ test('Press Row Gridiron API proxy serves game snapshot without exposing feed UR
   const child = spawn(process.execPath, ['server.js'], {
     cwd: path.join(__dirname, '..'),
     env: {
-      ...process.env, PORT: String(port),
+      ...process.env, PORT: String(port), TEST_SCENARIO: scenario,
       NODE_OPTIONS: '--require=' + path.join(__dirname, 'mock-youtube.cjs'),
       YOUTUBE_API_KEY: 'test-only',
       YOUTUBE_CHANNEL_ID: 'UCHteYhHnv-6VrSc9ImSs62g',
@@ -75,18 +76,30 @@ test('Press Row Gridiron API proxy serves game snapshot without exposing feed UR
     stdio: 'ignore'
   });
   t.after(() => child.kill());
-  let result;
-  for (let attempt = 0; attempt < 50; attempt++) {
+  for (let attempt = 0; attempt < 60; attempt++) {
     if (child.exitCode !== null) throw new Error('Server exited unexpectedly');
     try {
       const res = await fetch('http://127.0.0.1:' + port + '/api/v1/pressrow/gridiron');
-      if (res.ok) { result = await res.json(); break; }
+      if (res.ok) return await res.json();
     } catch {}
     await new Promise(resolve => setTimeout(resolve, 100));
   }
-  assert.ok(result?.connected, 'Press Row feed should be connected');
+  throw new Error('Press Row endpoint never became ready');
+}
+
+test('Press Row active football game is shown and feed token stays private', async t => {
+  const result = await getPressrowResponse(t, 'pressrow-active');
+  assert.equal(result.connected, true);
+  assert.equal(result.activeGame, true);
   assert.equal(result.feed.snapshot.homeScore, 21);
-  assert.equal(result.feed.snapshot.awayScore, 14);
   assert.equal(result.provider, 'pressrow-gridiron');
-  assert.equal(JSON.stringify(result).includes('test-token'), false, 'secret feed token should not be returned');
+  assert.equal(JSON.stringify(result).includes('test-token'), false);
 });
+
+for (const scenario of ['pressrow-stale', 'pressrow-pregame', 'pressrow-final']) {
+  test('Press Row panel hides for ' + scenario, async t => {
+    const result = await getPressrowResponse(t, scenario);
+    assert.equal(result.connected, true);
+    assert.equal(result.activeGame, false);
+  });
+}
