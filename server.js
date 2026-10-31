@@ -422,6 +422,18 @@ async function getPressrowFeed() {
       if (raw.length > 1024 * 1024) throw new Error('Feed too large');
       const feed = JSON.parse(raw);
       if (!feed || typeof feed !== 'object') throw new Error('Unexpected feed format');
+      console.log('Press Row activity diagnostic:', JSON.stringify({
+        updatedAt: feed.updatedAt,
+        revision: feed.revision,
+        quarter: feed.snapshot?.quarter,
+        gameTime: feed.snapshot?.gameTime,
+        playClockTime: feed.snapshot?.playClockTime,
+        down: feed.snapshot?.down,
+        distance: feed.snapshot?.distance,
+        homeScore: feed.snapshot?.homeScore,
+        awayScore: feed.snapshot?.awayScore,
+        additionalSnapshotKeys: feed.snapshot && typeof feed.snapshot === 'object' ? Object.keys(feed.snapshot).slice(25, 70) : []
+      }));
       const data = { configured: true, connected: true, provider: 'pressrow-gridiron', sport: 'football',
         fetchedAt: new Date().toISOString(), feed };
       pressrowFeedCache = { data, expires: Date.now() + 15000 };
