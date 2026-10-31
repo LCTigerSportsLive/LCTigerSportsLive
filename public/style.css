@@ -48,3 +48,19 @@ nav a.active{background:#29120e;border-top:2px solid var(--orange);padding-top:5
 .pressrow-frame{display:block;width:100%;height:540px;margin-top:14px;border:1px solid #4b2a15;border-radius:10px;background:#fff}
 .pressrow-open[hidden],.pressrow-toggle[hidden],.pressrow-frame[hidden],.pressrow-embed-note[hidden]{display:none}
 @media(max-width:520px){.pressrow-frame{height:580px}.pressrow-open,.pressrow-toggle{flex:1;text-align:center}}
+
+/* Press Row Gridiron API-powered scoreboard. */
+.pressrow-panel[hidden]{display:none}
+.pressrow-scoreboard{margin-top:14px;border:1px solid #58301d;border-radius:12px;overflow:hidden;background:#0c0c0c}
+.pressrow-scoreboard[hidden]{display:none}
+.pressrow-teams{display:grid;grid-template-columns:1fr 1fr}
+.pressrow-team{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px 10px;text-align:center}
+.pressrow-team + .pressrow-team{border-left:1px solid #442817}
+.pressrow-team-name{font-size:14px;font-weight:800;line-height:1.4;overflow-wrap:anywhere}
+.pressrow-team-score{font-size:clamp(38px,7vw,58px);line-height:1;font-variant-numeric:tabular-nums;color:var(--orange)}
+.pressrow-game-details{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:10px 12px;border-top:1px solid #442817}
+.pressrow-game-details span{font-size:12px;font-weight:800;color:#eee}
+.pressrow-game-details span:not(:last-child):after{content:" ·";color:#aaa;margin-left:8px}
+.pressrow-game-details span[hidden]{display:none}
+.pressrow-update{margin:10px 0 0;color:#9b9b9b;font-size:11px}
+.pressrow-update[hidden]{display:none}
