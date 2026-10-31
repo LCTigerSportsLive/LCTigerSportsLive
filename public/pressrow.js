@@ -106,28 +106,25 @@
     put('pressrow-home-name', homeName, 'Home');
     put('pressrow-away-score', awayScore, '—');
     put('pressrow-home-score', homeScore, '—');
-    const periodRaw = text(fromAny(items, ['quarter', 'currentQuarter', 'period', 'currentPeriod', 'gamePeriod']));
-    const clockRaw = text(fromAny(items, ['clock', 'gameClock', 'timeRemaining', 'periodClock', 'clockDisplay', 'timeLeft', 'gameTime']));
-    const state = text(fromAny(items, ['gameStatus', 'status', 'gamePhase', 'phase', 'gameState']));
-    const down = text(fromAny(items, ['down', 'currentDown']));
-    const distance = text(fromAny(items, ['distance', 'yardsToGo', 'toGo']));
-    const ballOn = text(fromAny(items, ['ballOn', 'yardLineDisplay', 'yardLine', 'lineOfScrimmage']));
-    const downDistance = text(fromAny(items, ['downDistanceText']));
-    const period = periodRaw && /^\\d+$/.test(periodRaw) ? 'Q' + periodRaw : periodRaw;
-    detail('pressrow-period', period || state);
+    const periodRaw = text(fromAny(items, ['period', 'currentPeriod', 'quarter', 'currentQuarter']));
+    const clockRaw = text(fromAny(items, ['gameClock', 'clock', 'timeRemaining', 'periodClock', 'clockDisplay']));
+    const shotClock = text(fromAny(items, ['shotClock']));
+    const useHalves = fromAny(items, ['useHalvesFormat']) === true;
+    const periodNum = Number(periodRaw);
+    const period = Number.isInteger(periodNum) && periodNum > 0
+      ? (useHalves ? (periodNum <= 2 ? 'Half ' + periodNum : 'OT ' + (periodNum - 2)) :
+        (periodNum <= 4 ? 'Q' + periodNum : 'OT ' + (periodNum - 4)))
+      : periodRaw;
+    detail('pressrow-period', period);
     detail('pressrow-clock', clockRaw);
-    detail('pressrow-situation', [
-      downDistance || (down && distance ? down + ' & ' + distance : null),
-      ballOn ? (ballOn.toLowerCase().startsWith('ball') ? ballOn : 'Ball on ' + ballOn) : null
-    ].filter(Boolean).join(' · '));
+    detail('pressrow-situation', shotClock && shotClock !== '0' ? 'Shot clock ' + shotClock : null);
     const more = byId('pressrow-more');
     more.hidden = true;
     more.textContent = '';
     board.hidden = false;
-    const final = state && /final|complete|finished|ended/i.test(state);
-    status.textContent = final ? 'Final score · Press Row Gridiron' : 'Scores connected · Press Row Gridiron';
+    status.textContent = 'Live basketball scores · Press Row Hoops';
     update.hidden = false;
-    const at = new Date(fetchedAt);
+    const at = new Date(feed.asOf || fetchedAt);
     update.textContent = Number.isNaN(at.getTime()) ? 'Updated from Press Row' : 'Last checked ' + at.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' });
   }
   let busy = false;
@@ -138,6 +135,7 @@
       const response = await fetch('/api/v1/pressrow/gridiron', { cache: 'no-store' });
       const payload = await response.json();
       if (!response.ok || !payload.connected || !payload.feed) throw new Error('Feed unavailable');
+      if (payload.sport !== 'basketball') throw new Error('Unexpected Press Row feed sport');
       if (payload.activeGame !== true) {
         panel.hidden = true;
         board.hidden = true;
