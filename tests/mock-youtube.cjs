@@ -9,6 +9,19 @@ function response(payload) {
 }
 global.fetch = async (input) => {
   const url = new URL(String(input));
+  if (url.hostname === 'gridiron.pressrowapps.com') {
+    return response({
+      title: 'Liberty Center Football',
+      snapshot: {
+        homeTeam: { name: 'Liberty Center Tigers' },
+        awayTeam: { name: 'Visitors' },
+        homeScore: 21, awayScore: 14,
+        quarter: 3, gameTime: '05:42',
+        downDistanceText: '2nd & 7', yardLineDisplay: 'LC 43'
+      },
+      revision: 4, updatedAt: 1793450000
+    });
+  }
   if (url.hostname === 'www.googleapis.com') {
     if (url.pathname.endsWith('/videos')) {
       const ids = (url.searchParams.get('id') || '').split(',');
