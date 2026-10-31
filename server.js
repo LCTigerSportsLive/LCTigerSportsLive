@@ -399,7 +399,7 @@ function configuredPressrowFeed() {
   try {
     const url = new URL(raw);
     if (url.protocol !== 'https:' || url.hostname !== 'gridiron.pressrowapps.com' ||
-        !/^\\/api\\/broadcast\\/feed\\/[A-Za-z0-9._-]+\\/data\\.json$/.test(url.pathname) ||
+        !new RegExp('^/api/broadcast/feed/[A-Za-z0-9._-]+/data[.]json$').test(url.pathname) ||
         url.search || url.hash || url.username || url.password) return null;
     return url.toString();
   } catch { return null; }
