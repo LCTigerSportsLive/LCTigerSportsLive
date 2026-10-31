@@ -427,6 +427,7 @@ async function getPressrowFeed() {
       pressrowFeedCache = { data, expires: Date.now() + 15000 };
       console.log('Press Row Gridiron feed connected:', Array.isArray(feed) ? 'array' : Object.keys(feed).slice(0, 20).join(', '));
       if (!Array.isArray(feed)) for (const [key, value] of Object.entries(feed).slice(0, 16)) console.log('Press Row schema', key, Array.isArray(value) ? 'array[' + value.length + ']' : value && typeof value === 'object' ? Object.keys(value).slice(0, 25).join(',') : typeof value);
+      for (const side of ['homeTeam', 'awayTeam']) if (feed.snapshot?.[side] && typeof feed.snapshot[side] === 'object') console.log('Press Row team schema', side, Object.keys(feed.snapshot[side]).slice(0, 20).join(','));
       return data;
     } catch (error) {
       console.warn('Press Row Gridiron fetch:', error.message);
