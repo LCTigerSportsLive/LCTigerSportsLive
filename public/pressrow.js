@@ -152,6 +152,6 @@
     } finally { busy = false; }
   }
   refresh();
-  setInterval(() => { if (!document.hidden) refresh(); }, 15000);
+  setInterval(() => { if (!document.hidden) refresh(); }, 20000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
 })();
