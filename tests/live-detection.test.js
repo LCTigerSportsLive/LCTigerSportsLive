@@ -57,3 +57,36 @@ test('new public live video is found through uploads playlist', async t => {
   assert.equal(result.videoId, 'ABcde12345_');
   assert.equal(result.source, 'channel-uploads');
 });
+
+test('Press Row Gridiron API proxy serves game snapshot without exposing feed URL', async t => {
+  const socket = net.createServer();
+  await new Promise(resolve => socket.listen(0, '127.0.0.1', resolve));
+  const port = socket.address().port;
+  await new Promise(resolve => socket.close(resolve));
+  const child = spawn(process.execPath, ['server.js'], {
+    cwd: path.join(__dirname, '..'),
+    env: {
+      ...process.env, PORT: String(port),
+      NODE_OPTIONS: '--require=' + path.join(__dirname, 'mock-youtube.cjs'),
+      YOUTUBE_API_KEY: 'test-only',
+      YOUTUBE_CHANNEL_ID: 'UCHteYhHnv-6VrSc9ImSs62g',
+      PRESSROW_GRIDIRON_FEED_URL: 'https://gridiron.pressrowapps.com/api/broadcast/feed/test-token/data.json'
+    },
+    stdio: 'ignore'
+  });
+  t.after(() => child.kill());
+  let result;
+  for (let attempt = 0; attempt < 50; attempt++) {
+    if (child.exitCode !== null) throw new Error('Server exited unexpectedly');
+    try {
+      const res = await fetch('http://127.0.0.1:' + port + '/api/v1/pressrow/gridiron');
+      if (res.ok) { result = await res.json(); break; }
+    } catch {}
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  assert.ok(result?.connected, 'Press Row feed should be connected');
+  assert.equal(result.feed.snapshot.homeScore, 21);
+  assert.equal(result.feed.snapshot.awayScore, 14);
+  assert.equal(result.provider, 'pressrow-gridiron');
+  assert.equal(JSON.stringify(result).includes('test-token'), false, 'secret feed token should not be returned');
+});
