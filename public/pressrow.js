@@ -2,7 +2,9 @@
   const byId = id => document.getElementById(id);
   const status = byId('pressrow-status');
   const board = byId('pressrow-scoreboard');
-  if (!status || !board) return;
+  const panel = byId('pressrow-panel');
+  if (!status || !board || !panel) return;
+  panel.hidden = true;
   const update = byId('pressrow-update');
   const key = name => name.toLowerCase().replace(/[^a-z0-9]/g, '');
   function field(object, names) {
@@ -136,8 +138,16 @@
       const response = await fetch('/api/v1/pressrow/gridiron', { cache: 'no-store' });
       const payload = await response.json();
       if (!response.ok || !payload.connected || !payload.feed) throw new Error('Feed unavailable');
+      if (payload.activeGame !== true) {
+        panel.hidden = true;
+        board.hidden = true;
+        update.hidden = true;
+        return;
+      }
       render(payload.feed, payload.fetchedAt);
+      panel.hidden = false;
     } catch {
+      panel.hidden = true;
       board.hidden = true;
       update.hidden = true;
       status.textContent = 'Live scores are temporarily unavailable. Trying again automatically.';
