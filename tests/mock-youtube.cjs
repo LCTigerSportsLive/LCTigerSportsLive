@@ -16,10 +16,11 @@ global.fetch = async (input) => {
         homeTeam: { name: 'Liberty Center Tigers' },
         awayTeam: { name: 'Visitors' },
         homeScore: 21, awayScore: 14,
-        quarter: 3, gameTime: '05:42',
+        quarter: scenario === 'pressrow-pregame' ? 0 : 3, gameTime: '05:42',
+        gameStatus: scenario === 'pressrow-final' ? 'final' : undefined,
         downDistanceText: '2nd & 7', yardLineDisplay: 'LC 43'
       },
-      revision: 4, updatedAt: 1793450000
+      revision: 4, updatedAt: scenario === 'pressrow-stale' ? Date.now() - 35 * 60 * 1000 : Date.now()
     });
   }
   if (url.hostname === 'www.googleapis.com') {
