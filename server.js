@@ -424,11 +424,11 @@ function pressrowGameActive(feed, now = Date.now()) {
 let pressrowFeedCache = { expires: 0, data: null };
 let pressrowFeedRequest = null;
 function configuredPressrowFeed() {
-  const raw = process.env.PRESSROW_HOOPS_FEED_URL || process.env.PRESSROW_GRIDIRON_FEED_URL;
+  const raw = process.env.PRESSROW_GRIDIRON_FEED_URL || process.env.PRESSROW_HOOPS_FEED_URL;
   if (!raw) return null;
   try {
     const url = new URL(raw);
-    const gridiron = url.hostname === 'gridiron.pressrowapps.com' &&
+    const gridiron = ['pressrowgridiron.com', 'gridiron.pressrowapps.com'].includes(url.hostname) &&
       /^\/api\/broadcast\/feed\/[A-Za-z0-9._-]+\/data[.]json$/.test(url.pathname);
     const hoops = url.hostname === 'pressrowhoops.com' &&
       /^\/api\/broadcast\/live\/[A-Za-z0-9_-]+[.]json$/.test(url.pathname);
@@ -466,7 +466,7 @@ async function getPressrowFeed() {
       console.log('Press Row feed status:', { provider: data.provider, activeGame, status: feed.status, live: feed.live });
       return data;
     } catch (error) {
-      console.warn('Press Row Gridiron fetch:', error.message);
+      console.warn('Press Row feed fetch:', error.message);
       // Avoid displaying an old score as live after the upstream connection fails.
       return { configured: true, connected: false, provider: 'pressrow',
         error: 'Live score feed temporarily unavailable' };
