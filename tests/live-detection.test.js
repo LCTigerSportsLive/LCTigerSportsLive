@@ -71,8 +71,8 @@ async function getPressrowResponse(t, scenario) {
       NODE_OPTIONS: '--require=' + path.join(__dirname, 'mock-youtube.cjs'),
       YOUTUBE_API_KEY: 'test-only',
       YOUTUBE_CHANNEL_ID: 'UCHteYhHnv-6VrSc9ImSs62g',
-      PRESSROW_GRIDIRON_FEED_URL: 'https://gridiron.pressrowapps.com/api/broadcast/feed/test-token/data.json',
-      PRESSROW_HOOPS_FEED_URL: scenario.startsWith('hoops-') ? 'https://pressrowhoops.com/api/broadcast/live/test-token.json' : ''
+      PRESSROW_GRIDIRON_FEED_URL: scenario.startsWith('hoops-') ? '' : 'https://pressrowgridiron.com/api/broadcast/feed/test-token/data.json',
+      PRESSROW_HOOPS_FEED_URL: 'https://pressrowhoops.com/api/broadcast/live/test-token.json'
     },
     stdio: 'ignore'
   });
