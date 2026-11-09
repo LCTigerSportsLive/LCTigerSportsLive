@@ -21,7 +21,7 @@ global.fetch = async (input) => {
       useHalvesFormat: false
     });
   }
-  if (url.hostname === 'gridiron.pressrowapps.com') {
+  if (url.hostname === 'pressrowgridiron.com' || url.hostname === 'gridiron.pressrowapps.com') {
     return response({
       title: 'Liberty Center Football',
       snapshot: {
