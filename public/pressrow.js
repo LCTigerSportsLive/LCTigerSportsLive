@@ -106,25 +106,29 @@
     put('pressrow-home-name', homeName, 'Home');
     put('pressrow-away-score', awayScore, '—');
     put('pressrow-home-score', homeScore, '—');
-    const periodRaw = text(fromAny(items, ['period', 'currentPeriod', 'quarter', 'currentQuarter']));
-    const clockRaw = text(fromAny(items, ['gameClock', 'clock', 'timeRemaining', 'periodClock', 'clockDisplay']));
-    const shotClock = text(fromAny(items, ['shotClock']));
-    const useHalves = fromAny(items, ['useHalvesFormat']) === true;
+    const periodRaw = text(fromAny(items, ['quarter', 'currentQuarter', 'period', 'currentPeriod']));
+    const clockRaw = text(fromAny(items, ['gameTime', 'gameClock', 'clock', 'timeRemaining', 'periodClock']));
     const periodNum = Number(periodRaw);
     const period = Number.isInteger(periodNum) && periodNum > 0
-      ? (useHalves ? (periodNum <= 2 ? 'Half ' + periodNum : 'OT ' + (periodNum - 2)) :
-        (periodNum <= 4 ? 'Q' + periodNum : 'OT ' + (periodNum - 4)))
+      ? (periodNum <= 4 ? 'Q' + periodNum : 'OT ' + (periodNum - 4))
       : periodRaw;
+    const down = text(fromAny(items, ['down', 'currentDown']));
+    const distance = text(fromAny(items, ['distance', 'yardsToGo', 'toGo']));
+    const downDistance = text(fromAny(items, ['downDistanceText']));
+    const ballOn = text(fromAny(items, ['yardLineDisplay', 'ballOn', 'yardLine', 'lineOfScrimmage']));
     detail('pressrow-period', period);
     detail('pressrow-clock', clockRaw);
-    detail('pressrow-situation', shotClock && shotClock !== '0' ? 'Shot clock ' + shotClock : null);
+    detail('pressrow-situation', [
+      downDistance || (down && distance ? down + ' & ' + distance : null),
+      ballOn ? (ballOn.toLowerCase().startsWith('ball') ? ballOn : 'Ball on ' + ballOn) : null
+    ].filter(Boolean).join(' · '));
     const more = byId('pressrow-more');
     more.hidden = true;
     more.textContent = '';
     board.hidden = false;
-    status.textContent = 'Live basketball scores · Press Row Hoops';
+    status.textContent = 'Live football scores · Press Row Gridiron';
     update.hidden = false;
-    const at = new Date(feed.asOf || fetchedAt);
+    const at = new Date(feed.updatedAt || fetchedAt);
     update.textContent = Number.isNaN(at.getTime()) ? 'Updated from Press Row' : 'Last checked ' + at.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' });
   }
   let busy = false;
@@ -135,7 +139,7 @@
       const response = await fetch('/api/v1/pressrow/gridiron', { cache: 'no-store' });
       const payload = await response.json();
       if (!response.ok || !payload.connected || !payload.feed) throw new Error('Feed unavailable');
-      if (payload.sport !== 'basketball') throw new Error('Unexpected Press Row feed sport');
+      if (payload.sport !== 'football') throw new Error('Unexpected Press Row feed sport');
       if (payload.activeGame !== true) {
         panel.hidden = true;
         board.hidden = true;
