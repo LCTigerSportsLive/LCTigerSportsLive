@@ -31,16 +31,13 @@
         player.hidden = false;
         status.textContent = '● LIVE NOW — Watch the broadcast below';
         panel.classList.add('is-live');
-        document.dispatchEvent(new CustomEvent('tsl-game-status', { detail: { source: 'broadcast', active: true } }));
       } else {
-        document.dispatchEvent(new CustomEvent('tsl-game-status', { detail: { source: 'broadcast', active: data.status === 'unavailable' ? null : false } }));
         clearPlayer();
         status.textContent = data.status === 'unavailable'
           ? 'Live status cannot be confirmed right now. Select WATCH LIVE to view the channel on YouTube.'
           : 'No live broadcast was detected. Select WATCH LIVE to check YouTube for current broadcasts.';
       }
     } catch {
-      document.dispatchEvent(new CustomEvent('tsl-game-status', { detail: { source: 'broadcast', active: null } }));
       clearPlayer();
       status.textContent = 'Live status cannot be confirmed right now. Select WATCH LIVE to open YouTube.';
     } finally {
