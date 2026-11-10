@@ -68,3 +68,6 @@ main > .game-day-card .live-player-frame{width:100%;max-width:none}
  main > .hero h1{font-size:29px}
  main > .game-day-card{padding:16px;min-height:380px}
 }
+
+/* Subtle tiger stripes behind website content; panels stay readable. */
+body{background-color:#080808;background-image:repeating-linear-gradient(118deg,transparent 0 54px,rgba(255,62,35,.12) 54px 65px,transparent 65px 85px,rgba(255,62,35,.07) 85px 96px,transparent 96px 158px),repeating-linear-gradient(62deg,transparent 0 125px,rgba(255,62,35,.065) 125px 137px,transparent 137px 225px),radial-gradient(ellipse at 70% 0%,#28110b,transparent 55%);background-attachment:fixed}
