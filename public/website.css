@@ -1,0 +1,42 @@
+/* Desktop-first website layer. Existing app styles remain intact on phones. */
+html{scroll-behavior:smooth}
+body{background:radial-gradient(ellipse at 75% 0%,#32130d 0%,transparent 43%),#080808}
+a:focus-visible,button:focus-visible{outline:3px solid #ffb29f;outline-offset:3px}
+@media(min-width:900px){
+ body{padding-bottom:0}
+ header{height:94px;padding:10px max(28px,calc((100vw - 1240px)/2));border-bottom:1px solid #3d221b}
+ header b{font-size:24px}
+ header small{font-size:11px}
+ .brand-logo{width:148px;height:74px}
+ main{max-width:1240px;padding:30px 32px 90px}
+ .hero{position:relative;padding:90px 56px 85px;border:1px solid #593020;border-radius:24px;background:linear-gradient(110deg,#18100e 5%,#32140e 62%,#100e0d);overflow:hidden;margin:10px 0 44px}
+ .hero:after{content:"TIGERS";position:absolute;right:-35px;bottom:-32px;font-size:clamp(110px,16vw,250px);font-weight:1000;letter-spacing:-12px;color:#ff3e2312;pointer-events:none}
+ .hero h1{font-size:clamp(54px,6vw,86px);max-width:850px;letter-spacing:-2.5px}
+ .hero p{font-size:20px;max-width:650px}
+ .hero .primary{position:relative;z-index:1;padding:17px 25px;font-size:15px}
+ h2{font-size:23px;margin-top:48px;margin-bottom:20px}
+ .game-day-card{padding:30px;border-radius:22px}
+ .game-day-card-header{gap:24px}
+ .game-day-team h3{font-size:24px}
+ .game-day-team p{font-size:15px}
+ .game-day-watch{font-size:14px;padding:16px 22px}
+ .game-day-card .game-day-live{padding-top:24px}
+ .game-day-card .live-player-heading h3{font-size:22px}
+ .live-player-frame{max-width:950px;margin:20px auto 0}
+ .pressrow-panel{max-width:950px;margin-left:auto;margin-right:auto}
+ .calendar-home-button{padding:24px 30px;margin-top:24px}
+ .sports{grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+ .sports button{min-height:145px;font-size:37px;cursor:pointer;transition:transform .15s,border-color .15s}
+ .sports button:hover{transform:translateY(-3px)}
+ .sports span{font-size:16px}
+ .sports small{font-size:12px}
+ .members-promo{padding:30px}
+ .video{min-height:220px;padding:30px}
+ nav{position:static;max-width:1240px;margin:0 auto 35px;border:1px solid #48251b;border-radius:18px;height:74px;background:#111;justify-content:center}
+ nav a{flex:0 1 160px;font-size:23px}
+ nav span{font-size:12px}
+ .roster-hero h1{font-size:54px}
+ .roster-wrap{max-width:100%}
+}
+@media(min-width:900px) and (max-width:1100px){main{padding-left:24px;padding-right:24px}.hero{padding:65px 36px}.sports{gap:12px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.sports button{transition:none}}
