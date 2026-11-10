@@ -68,3 +68,10 @@ main > .game-day-card .live-player-frame{width:100%;max-width:none}
  main > .hero h1{font-size:29px}
  main > .game-day-card{padding:16px;min-height:380px}
 }
+
+/* Give the athletics calendar prominence when no broadcast or scored game is active. */
+main > .calendar-home-button.calendar-expanded{min-height:190px;padding:38px 42px;display:flex;align-items:center;justify-content:center;gap:26px;border:2px solid var(--orange);background:linear-gradient(120deg,#28140f,#121212);box-shadow:0 14px 42px #0009;transition:padding .2s,min-height .2s}
+main > .calendar-home-button.calendar-expanded .calendar-home-icon{font-size:52px}
+main > .calendar-home-button.calendar-expanded strong{font-size:clamp(22px,2.8vw,34px)}
+main > .calendar-home-button.calendar-expanded small{font-size:16px;margin-top:9px}
+@media(max-width:520px){main > .calendar-home-button.calendar-expanded{min-height:145px;padding:22px 18px;gap:15px}main > .calendar-home-button.calendar-expanded .calendar-home-icon{font-size:34px}main > .calendar-home-button.calendar-expanded strong{font-size:21px}main > .calendar-home-button.calendar-expanded small{font-size:13px}}
