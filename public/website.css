@@ -83,7 +83,7 @@ body{background-color:#080808;background-image:repeating-linear-gradient(118deg,
 
 /* Reference-inspired Tiger Sports Live homepage: banner, bold striped field,
    two-column hero/Game Day and three action cards. */
-body{background-color:#050505;background-image:repeating-linear-gradient(151deg,transparent 0 54px,rgba(255,91,0,.26) 54px 67px,transparent 67px 93px,rgba(255,91,0,.15) 93px 110px,transparent 110px 210px),repeating-linear-gradient(24deg,transparent 0 160px,rgba(255,84,0,.15) 160px 183px,transparent 183px 320px),radial-gradient(ellipse at 30% 0%,#331005,#030303 65%);background-attachment:fixed}
+body{background-color:#050505;background-image:repeating-linear-gradient(151deg,transparent 0 54px,rgba(255,91,0,.54) 54px 73px,transparent 67px 93px,rgba(255,91,0,.33) 93px 116px,transparent 110px 210px),repeating-linear-gradient(24deg,transparent 0 160px,rgba(255,84,0,.30) 160px 188px,transparent 183px 320px),radial-gradient(ellipse at 30% 0%,#331005,#030303 65%);background-attachment:fixed}
 header{position:relative;top:auto;justify-content:center;gap:18px;background:transparent;border:0;backdrop-filter:none;height:112px}
 header .brand-logo{width:94px;height:90px;max-width:none;padding:0;background:transparent;border-radius:0}
 header b{font-size:clamp(28px,4.2vw,54px);font-weight:1000;font-style:italic;letter-spacing:-1.5px;text-shadow:0 3px 6px #000}
