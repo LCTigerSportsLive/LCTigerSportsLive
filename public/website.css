@@ -79,3 +79,49 @@ body{background-color:#080808;background-image:repeating-linear-gradient(118deg,
 .upcoming-game p{font-size:16px;color:#ddd;margin:8px 0}
 .upcoming-game .secondary{margin-top:16px}
 @media(max-width:520px){.upcoming-game{padding:16px}.upcoming-game p{font-size:14px}}
+
+
+/* Reference-inspired Tiger Sports Live homepage: banner, bold striped field,
+   two-column hero/Game Day and three action cards. */
+body{background-color:#050505;background-image:repeating-linear-gradient(151deg,transparent 0 54px,rgba(255,91,0,.26) 54px 67px,transparent 67px 93px,rgba(255,91,0,.15) 93px 110px,transparent 110px 210px),repeating-linear-gradient(24deg,transparent 0 160px,rgba(255,84,0,.15) 160px 183px,transparent 183px 320px),radial-gradient(ellipse at 30% 0%,#331005,#030303 65%);background-attachment:fixed}
+header{position:relative;top:auto;justify-content:center;gap:18px;background:transparent;border:0;backdrop-filter:none;height:112px}
+header .brand-logo{width:94px;height:90px;max-width:none;padding:0;background:transparent;border-radius:0}
+header b{font-size:clamp(28px,4.2vw,54px);font-weight:1000;font-style:italic;letter-spacing:-1.5px;text-shadow:0 3px 6px #000}
+header small{font-size:11px;text-align:center;letter-spacing:4px}
+nav.top-nav,body > nav:last-child{background:linear-gradient(#272727,#030303 75%);border:3px solid #ff650b;border-radius:17px;box-shadow:0 5px 16px #000c}
+nav.top-nav a,body > nav:last-child a{color:#fff;font-weight:900}
+nav.top-nav a.active,body > nav:last-child a.active{background:linear-gradient(#ff7a19,#f34800);border:2px solid #ffb15a;border-radius:15px;padding-top:5px}
+main{max-width:1440px}
+.homepage-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:stretch}
+.homepage-grid > *{min-width:0}
+main > .homepage-grid > .hero{grid-column:1;grid-row:1;margin:0;padding:25px 26px;background:linear-gradient(145deg,#101010,#030303);border:4px solid #ff650b;border-radius:25px;box-shadow:0 10px 22px #000b;display:flex;flex-direction:column;justify-content:center}
+.homepage-grid .hero:after{display:none}
+.homepage-grid .hero .live{display:none}
+.homepage-grid .hero h1{font-style:italic;font-weight:1000;font-size:clamp(26px,2.6vw,43px);line-height:1.06;letter-spacing:-1px;margin:0 0 18px}
+.homepage-grid .hero p{font-size:clamp(14px,1.25vw,19px);line-height:1.4;margin:0 0 20px}
+.homepage-grid .hero .primary{align-self:center;background:linear-gradient(#f83a39,#ad0710);color:#fff;border-radius:14px;padding:16px 24px;font-size:clamp(13px,1.4vw,19px);text-align:center;margin-top:0}
+main > .homepage-grid > .game-day-card{grid-column:2/4;grid-row:1;min-height:345px;padding:0 0 8px;background:#090909;border:4px solid #ff650b;border-radius:25px;overflow:hidden;box-shadow:0 10px 22px #000b}
+.game-day-banner{display:block;background:linear-gradient(105deg,#e84700,#ff790e 50%,#d63b00);text-align:center;font-size:clamp(30px,3.6vw,53px);font-weight:1000;font-style:italic;line-height:1.1;padding:9px 12px;color:#fff;text-shadow:0 3px 4px #611900}
+.homepage-grid .game-day-card-header{display:none}
+.homepage-grid .game-day-card .game-day-live{margin:0;padding:18px 20px;border:0;background:radial-gradient(ellipse at 50% 90%,#282828,#050505 72%);text-align:center;min-height:240px}
+.homepage-grid .live-player-heading{display:block}
+.homepage-grid .live-player-heading h3{font-size:clamp(20px,2.3vw,30px);margin:10px 0}
+.homepage-grid .live-player-status{font-size:clamp(15px,1.5vw,19px);color:#eee}
+.homepage-grid .game-day-live:not(.is-live) .live-player-heading:before{content:"▶";display:grid;place-items:center;margin:2px auto 15px;width:65px;height:65px;border:4px solid #fff;border-radius:50%;font-size:35px;padding-left:4px}
+.homepage-grid .game-day-card .live-player-frame{max-width:100%;margin:14px auto}
+.homepage-grid .upcoming-game{max-width:720px;margin:16px auto 0}
+.homepage-grid .calendar-home-button,.homepage-rosters,.homepage-members{margin:0;min-height:164px;border:4px solid #ff650b;border-radius:24px;background:linear-gradient(#202020,#040404 70%);box-shadow:0 8px 22px #000b;color:#fff;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:18px;padding:20px;text-align:center}
+.homepage-grid .calendar-home-button{grid-column:1;grid-row:2}
+.homepage-rosters{grid-column:2;grid-row:2}
+.homepage-members{grid-column:3;grid-row:2}
+.homepage-grid .calendar-home-icon,.homepage-card-icon{font-size:46px;flex:0 0 auto}
+.homepage-grid .calendar-home-button strong,.homepage-rosters strong,.homepage-members strong{display:block;color:#fff;font-size:clamp(19px,2vw,28px);line-height:1.1}
+.homepage-grid .calendar-home-button small,.homepage-rosters small,.homepage-members small{display:block;color:#ddd;font-size:clamp(12px,1vw,15px);line-height:1.35;margin:9px 0}
+.homepage-grid .calendar-home-button small{display:none}
+.homepage-grid .calendar-home-button:after{content:"View Calendar →";display:block;align-self:flex-end;background:linear-gradient(#ff7e16,#f34a00);color:#fff;font-weight:900;padding:12px 18px;border-radius:12px;white-space:nowrap}
+.homepage-rosters em,.homepage-members em{display:inline-block;font-style:normal;font-weight:900;color:#fff;background:linear-gradient(#ff7e16,#f34a00);padding:12px 18px;border-radius:12px}
+.homepage-grid a:hover{filter:brightness(1.12)}
+@media(min-width:900px){main{padding-top:24px;padding-bottom:30px}nav.top-nav{max-width:1370px;margin:0 auto 16px}body > nav:last-child{max-width:1370px;margin:0 auto 20px}main > .homepage-grid > .hero{padding:28px}main > .homepage-grid > .game-day-card{min-height:350px}}
+@media(max-width:1100px){.homepage-grid{gap:12px}.homepage-grid .calendar-home-button,.homepage-rosters,.homepage-members{flex-direction:column;gap:8px;padding:16px}.homepage-grid .calendar-home-button:after{align-self:center}.homepage-grid .hero h1{font-size:29px}}
+@media(max-width:760px){header{height:92px}header .brand-logo{width:68px;height:68px}header b{font-size:26px}header small{font-size:8px}.homepage-grid{grid-template-columns:1fr 1fr}.homepage-grid > .hero{grid-column:1/3!important;grid-row:1!important}.homepage-grid > .game-day-card{grid-column:1/3!important;grid-row:2!important}.homepage-grid .calendar-home-button{grid-column:1/3;grid-row:3}.homepage-rosters{grid-column:1;grid-row:4}.homepage-members{grid-column:2;grid-row:4}.homepage-grid .calendar-home-button{flex-direction:row}.homepage-grid .hero h1{font-size:32px}.homepage-grid .calendar-home-button:after{display:none}main > .homepage-grid > .game-day-card{min-height:320px}}
+@media(max-width:480px){.homepage-grid{grid-template-columns:1fr}.homepage-grid > .hero,.homepage-grid > .game-day-card,.homepage-grid .calendar-home-button,.homepage-rosters,.homepage-members{grid-column:1!important}.homepage-grid > .hero{grid-row:1!important}.homepage-grid > .game-day-card{grid-row:2!important}.homepage-grid .calendar-home-button{grid-row:3}.homepage-rosters{grid-row:4}.homepage-members{grid-row:5}.homepage-grid .calendar-home-button,.homepage-rosters,.homepage-members{min-height:130px}header{gap:8px}header b{font-size:22px}header small{letter-spacing:1.5px}nav.top-nav{height:60px}nav.top-nav a{font-size:17px}nav.top-nav span{font-size:9px}}
