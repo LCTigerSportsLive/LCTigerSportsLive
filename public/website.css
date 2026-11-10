@@ -71,3 +71,11 @@ main > .game-day-card .live-player-frame{width:100%;max-width:none}
 
 /* Subtle tiger stripes behind website content; panels stay readable. */
 body{background-color:#080808;background-image:repeating-linear-gradient(118deg,transparent 0 54px,rgba(255,62,35,.065) 54px 65px,transparent 65px 85px,rgba(255,62,35,.038) 85px 96px,transparent 96px 158px),repeating-linear-gradient(62deg,transparent 0 125px,rgba(255,62,35,.035) 125px 137px,transparent 137px 225px),radial-gradient(ellipse at 70% 0%,#28110b,transparent 55%);background-attachment:fixed}
+
+/* Next scheduled game appears inside Game Day only while no game is live. */
+.upcoming-game{margin-top:18px;padding:22px;border:1px solid #713d29;border-radius:16px;background:linear-gradient(125deg,#26140e,#111);text-align:center}
+.upcoming-game[hidden]{display:none!important}
+.upcoming-game h3{font-size:clamp(22px,3vw,34px);line-height:1.2;color:#fff;margin:12px 0}
+.upcoming-game p{font-size:16px;color:#ddd;margin:8px 0}
+.upcoming-game .secondary{margin-top:16px}
+@media(max-width:520px){.upcoming-game{padding:16px}.upcoming-game p{font-size:14px}}
