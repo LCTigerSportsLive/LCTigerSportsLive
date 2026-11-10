@@ -51,14 +51,14 @@ main > .hero{padding:22px 24px 24px;margin:10px 0 24px}
 main > .hero h1{font-size:clamp(28px,4vw,44px);line-height:1.12;letter-spacing:-.7px;margin:8px 0}
 main > .hero p{font-size:15px;line-height:1.45;margin:8px 0 12px}
 main > .hero .primary{padding:11px 17px;font-size:13px;margin-top:4px}
-main > .game-day-card{padding:24px;min-height:440px;border:2px solid #693522;box-shadow:0 14px 45px #0009}
+main > .game-day-card{padding:22px;min-height:390px;border:2px solid #693522;box-shadow:0 14px 45px #0009}
 main > .game-day-card .game-day-live{padding-top:24px}
 main > .game-day-card .live-player-frame{width:100%;max-width:none}
 @media(min-width:900px){
  main > .hero{padding:32px 38px 34px;margin:8px 0 26px}
  main > .hero h1{font-size:clamp(36px,4vw,54px);max-width:900px}
  main > .hero p{font-size:17px;max-width:760px}
- main > .game-day-card{padding:42px;min-height:620px;border-radius:26px}
+ main > .game-day-card{padding:34px;min-height:520px;border-radius:26px}
  main > .game-day-card .game-day-live{padding-top:34px}
  main > .game-day-card .live-player-heading h3{font-size:27px}
  main > .game-day-card .game-day-team h3{font-size:29px}
@@ -66,5 +66,5 @@ main > .game-day-card .live-player-frame{width:100%;max-width:none}
 @media(max-width:520px){
  main > .hero{padding:18px 16px 20px;margin:6px 0 20px}
  main > .hero h1{font-size:29px}
- main > .game-day-card{padding:18px;min-height:430px}
+ main > .game-day-card{padding:16px;min-height:380px}
 }
