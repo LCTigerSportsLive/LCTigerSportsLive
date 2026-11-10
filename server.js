@@ -475,6 +475,57 @@ async function getPressrowFeed() {
   try { return await pressrowFeedRequest; } finally { pressrowFeedRequest = null; }
 }
 
+
+const athleticsCalendarId = 'events@libertycenterschools.org';
+let nextGameCache = { expires: 0, data: null };
+async function getNextScheduledGame() {
+  if (nextGameCache.data && Date.now() < nextGameCache.expires) return nextGameCache.data;
+  const fallback = { available: false, calendarUrl: '/athletics-calendar.html' };
+  try {
+    const url = 'https://calendar.google.com/calendar/ical/' + encodeURIComponent(athleticsCalendarId) + '/public/basic.ics';
+    const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!response.ok) throw new Error('Calendar HTTP ' + response.status);
+    const ics = await response.text();
+    if (ics.length > 3 * 1024 * 1024) throw new Error('Calendar too large');
+    const unfolded = ics.replace(/\r?\n[ \t]/g, '');
+    const events = [...unfolded.matchAll(/BEGIN:VEVENT\r?\n([\s\S]*?)\r?\nEND:VEVENT/g)];
+    const now = Date.now();
+    const sports = /football|basketball|soccer|volleyball|baseball|softball|wrestling|track|cross.country|golf|tennis|swim|lacrosse|hockey|bowling/i;
+    const game = /\b(vs\.?|versus|at|@|game|match|meet|tournament|invite|invitational|scrimmage|dual|triangular|competition)\b/i;
+    const excluded = /practice|rehearsal|meeting|fundraiser|weight room|conditioning|camp|tryout|open gym/i;
+    const candidates = [];
+    for (const event of events) {
+      const field = key => event[1].split(/\r?\n/).find(line => line.startsWith(key + ':') || line.startsWith(key + ';')) || '';
+      const summary = field('SUMMARY').replace(/^SUMMARY[^:]*:/, '').replace(/\\[,;nN]/g, ' ').trim();
+      const location = field('LOCATION').replace(/^LOCATION[^:]*:/, '').replace(/\\[,;nN]/g, ' ').trim();
+      const start = field('DTSTART');
+      if (!start || !sports.test(summary) || !game.test(summary) || excluded.test(summary) || /STATUS:CANCELLED/.test(event[1])) continue;
+      const raw = start.slice(start.indexOf(':') + 1);
+      const m = /^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})?(Z)?)?/.exec(raw);
+      if (!m) continue;
+      let date;
+      if (m[7]) date = new Date(Date.UTC(+m[1], +m[2]-1, +m[3], +m[4], +m[5], +(m[6] || 0)));
+      else {
+        // Calendar events are scheduled in America/New_York; convert local wall time to UTC.
+        const naive = Date.UTC(+m[1], +m[2]-1, +m[3], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0));
+        const parts = new Intl.DateTimeFormat('en-US', {timeZone:'America/New_York',timeZoneName:'shortOffset'}).formatToParts(new Date(naive));
+        const offset = /GMT([+-])(\d{1,2})(?::(\d{2}))?/.exec(parts.find(p=>p.type==='timeZoneName')?.value || '');
+        const minutes = offset ? (offset[1] === '-' ? -1 : 1) * (+offset[2]*60 + +(offset[3]||0)) : -300;
+        date = new Date(naive - minutes*60000);
+      }
+      if (date.getTime() > now && date.getTime() < now + 120*86400000) candidates.push({ title: summary, location, start: date.toISOString() });
+    }
+    candidates.sort((a,b)=>a.start.localeCompare(b.start));
+    const result = candidates.length ? { available: true, game: candidates[0], calendarUrl: '/athletics-calendar.html' } : fallback;
+    nextGameCache = { data: result, expires: Date.now() + 15*60000 };
+    return result;
+  } catch (error) {
+    console.warn('Upcoming athletics calendar:', error.message);
+    nextGameCache = { data: fallback, expires: Date.now() + 2*60000 };
+    return fallback;
+  }
+}
+
 http.createServer(async (req, res) => {
   const pathname = (req.url || '/').split('?')[0];
   // Lightweight liveness check: does not depend on YouTube availability.
@@ -514,6 +565,11 @@ http.createServer(async (req, res) => {
       'Cache-Control': 'no-store',
       'X-Content-Type-Options': 'nosniff'
     });
+    return res.end(JSON.stringify(data));
+  }
+  if (pathname === '/api/next-game') {
+    const data = await getNextScheduledGame();
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
     return res.end(JSON.stringify(data));
   }
   if (pathname === '/api/live') {
