@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1100" viewBox="0 0 1600 1100">
 <defs>
  <linearGradient id="coat" x2=".7" y2="1"><stop stop-color="#080808"/><stop offset=".45" stop-color="#17100c"/><stop offset="1" stop-color="#090909"/></linearGradient>
- <filter id="fur" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".018 .28" numOctaves="3" seed="8" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="21" xChannelSelector="R" yChannelSelector="G"/><feMorphology operator="erode" radius="9"/></filter>
+ <filter id="fur" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".018 .28" numOctaves="3" seed="8" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="21" xChannelSelector="R" yChannelSelector="G"/><feMorphology operator="erode" radius="17"/></filter>
  <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".17 .6" numOctaves="3" seed="4" stitchTiles="stitch" result="n"/><feColorMatrix in="n" type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".15"/></feComponentTransfer></filter>
 </defs>
 <rect width="1600" height="1100" fill="url(#coat)"/>
