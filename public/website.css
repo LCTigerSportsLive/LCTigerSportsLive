@@ -131,5 +131,5 @@ body{background-color:#070707;background-image:url('/tiger-stripes.svg'),radial-
 @media(max-width:600px){body{background-size:600px 480px,cover}}
 
 /* One continuous full-bleed stripe field, with no repeating tile seams. */
-body{background-image:url('/tiger-stripes.svg?v=bengal-thin-5');background-size:cover;background-position:center center;background-repeat:no-repeat;background-attachment:fixed}
+body{background-image:url('/tiger-stripes.svg?v=bengal-inverted-6');background-size:cover;background-position:center center;background-repeat:no-repeat;background-attachment:fixed}
 @media(max-width:600px){body{background-size:cover;background-position:48% center}}
