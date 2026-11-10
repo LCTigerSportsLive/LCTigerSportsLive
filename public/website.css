@@ -129,3 +129,7 @@ main > .homepage-grid > .game-day-card{grid-column:2/4;grid-row:1;min-height:345
 /* Organic, tapered tiger markings replace straight diagonal bands. */
 body{background-color:#070707;background-image:url('/tiger-stripes.svg'),radial-gradient(ellipse at 50% 0%,#2a1007,#050505 75%);background-size:900px 720px,cover;background-position:center top;background-repeat:repeat;background-attachment:fixed}
 @media(max-width:600px){body{background-size:600px 480px,cover}}
+
+/* One continuous full-bleed stripe field, with no repeating tile seams. */
+body{background-image:url('/tiger-stripes.svg?v=continuous-2');background-size:cover;background-position:center center;background-repeat:no-repeat;background-attachment:fixed}
+@media(max-width:600px){body{background-size:cover;background-position:48% center}}
