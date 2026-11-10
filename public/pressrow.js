@@ -140,7 +140,6 @@
       const payload = await response.json();
       if (!response.ok || !payload.connected || !payload.feed) throw new Error('Feed unavailable');
       if (payload.sport !== 'football') throw new Error('Unexpected Press Row feed sport');
-      document.dispatchEvent(new CustomEvent('tsl-game-status', { detail: { source: 'scoreboard', active: payload.activeGame === true } }));
       if (payload.activeGame !== true) {
         panel.hidden = true;
         board.hidden = true;
@@ -150,7 +149,6 @@
       render(payload.feed, payload.fetchedAt);
       panel.hidden = false;
     } catch {
-      document.dispatchEvent(new CustomEvent('tsl-game-status', { detail: { source: 'scoreboard', active: null } }));
       panel.hidden = true;
       board.hidden = true;
       update.hidden = true;
