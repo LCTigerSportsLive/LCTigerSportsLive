@@ -147,3 +147,21 @@ header .brand-logo{background:#fff;border-radius:9px;padding:5px;box-shadow:0 2p
 
 /* Orange lettering on the homepage Live Scores section. */
 .homepage-grid>.homepage-scores,.homepage-grid>.homepage-scores strong,.homepage-grid>.homepage-scores small,.homepage-grid>.homepage-scores em{color:#ff3e23}
+
+/* Place Live Scores immediately below Game Day, aligned to its two-column width. */
+.homepage-grid>.homepage-scores{grid-column:2/4;grid-row:2}
+.homepage-grid>.calendar-home-button{grid-column:1;grid-row:3}
+.homepage-grid>.homepage-rosters{grid-column:2;grid-row:3}
+.homepage-grid>.homepage-members{grid-column:3;grid-row:3}
+@media(max-width:760px){
+ .homepage-grid>.homepage-scores{grid-column:1/3;grid-row:3}
+ .homepage-grid>.calendar-home-button{grid-column:1/3;grid-row:4}
+ .homepage-grid>.homepage-rosters{grid-column:1;grid-row:5}
+ .homepage-grid>.homepage-members{grid-column:2;grid-row:5}
+}
+@media(max-width:480px){
+ .homepage-grid>.homepage-scores{grid-column:1;grid-row:3}
+ .homepage-grid>.calendar-home-button{grid-column:1;grid-row:4}
+ .homepage-grid>.homepage-rosters{grid-column:1;grid-row:5}
+ .homepage-grid>.homepage-members{grid-column:1;grid-row:6}
+}
