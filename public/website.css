@@ -133,3 +133,6 @@ body{background-color:#070707;background-image:url('/tiger-stripes.svg'),radial-
 /* One continuous full-bleed stripe field, with no repeating tile seams. */
 body{background-image:url('/tiger-stripes.svg?v=bengal-inverted-thin-7');background-size:cover;background-position:center center;background-repeat:no-repeat;background-attachment:fixed}
 @media(max-width:600px){body{background-size:cover;background-position:48% center}}
+
+/* White backing for the header logo only; other logos remain untouched. */
+header .brand-logo{background:#fff;border-radius:9px;padding:5px;box-shadow:0 2px 12px #0007}
