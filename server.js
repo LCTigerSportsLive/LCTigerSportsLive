@@ -445,7 +445,8 @@ async function getPressrowFeed() {
   pressrowFeedRequest = (async () => {
     try {
       const response = await fetch(url, {
-        headers: { 'Accept': 'application/json' },
+        headers: { 'Accept': 'application/json', 'Cache-Control': 'no-cache' },
+        cache: 'no-store',
         signal: AbortSignal.timeout(8000)
       });
       if (!response.ok) throw new Error('Press Row HTTP ' + response.status);
@@ -460,6 +461,7 @@ async function getPressrowFeed() {
       const data = { configured: true, connected: true, provider: hoops ? 'pressrow-hoops' : 'pressrow-gridiron', sport: hoops ? 'basketball' : 'football',
         fetchedAt: new Date().toISOString(), activeGame, feed };
       pressrowFeedCache = { data, expires: Date.now() + 15000 };
+      console.log('Press Row feed freshness:', { fetchedAt: data.fetchedAt, sourceUpdatedAt: feed.updatedAt ?? null, gameStatus: feed.snapshot?.gameStatus ?? feed.snapshot?.status ?? feed.gameStatus ?? feed.status ?? null, activeGame });
       console.log('Press Row feed connected:', Array.isArray(feed) ? 'array' : Object.keys(feed).slice(0, 20).join(', '));
       if (!Array.isArray(feed)) for (const [key, value] of Object.entries(feed).slice(0, 16)) console.log('Press Row schema', key, Array.isArray(value) ? 'array[' + value.length + ']' : value && typeof value === 'object' ? Object.keys(value).slice(0, 25).join(',') : typeof value);
       for (const side of ['homeTeam', 'awayTeam']) if (feed.snapshot?.[side] && typeof feed.snapshot[side] === 'object') console.log('Press Row team schema', side, Object.keys(feed.snapshot[side]).slice(0, 20).join(','));
