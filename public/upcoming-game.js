@@ -38,6 +38,6 @@
   new MutationObserver(update).observe(live, {attributes:true,attributeFilter:['class']});
   if (scoreboard) new MutationObserver(update).observe(scoreboard, {attributes:true,attributeFilter:['hidden']});
   refresh();
-  setInterval(refresh, 5 * 60 * 1000);
+  setInterval(refresh, 60 * 1000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
 })();
