@@ -165,3 +165,6 @@ header .brand-logo{background:#fff;border-radius:9px;padding:5px;box-shadow:0 2p
  .homepage-grid>.homepage-rosters{grid-column:1;grid-row:5}
  .homepage-grid>.homepage-members{grid-column:1;grid-row:6}
 }
+
+/* Desktop: Live Scores spans both upper boxes (welcome + Game Day). */
+@media(min-width:761px){.homepage-grid>.homepage-scores{grid-column:1/-1;grid-row:2}}
