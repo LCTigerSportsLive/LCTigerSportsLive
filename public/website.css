@@ -144,3 +144,6 @@ header .brand-logo{background:#fff;border-radius:9px;padding:5px;box-shadow:0 2p
 .homepage-scores em{display:block;color:#ff8a42;font-style:normal;font-weight:900}
 .homepage-scores:hover{border-color:#ffb15a}
 @media(max-width:700px){.homepage-grid>.homepage-scores{grid-column:1/-1;grid-row:auto;min-height:110px}}
+
+/* Orange lettering on the homepage Live Scores section. */
+.homepage-grid>.homepage-scores,.homepage-grid>.homepage-scores strong,.homepage-grid>.homepage-scores small,.homepage-grid>.homepage-scores em{color:#ff3e23}
