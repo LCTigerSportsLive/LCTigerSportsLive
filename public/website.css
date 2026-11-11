@@ -199,3 +199,6 @@ main > .members-promo{gap:14px}
 
 /* Black labels on orange News & Events action buttons. */
 body:has(a[href="/football-recap.html"]) main .video a.primary{color:#000!important}
+
+/* Smaller headings in the two lower homepage boxes. */
+main > .members-promo h3,main > .athletic-news-home span{font-size:clamp(16px,1.55vw,22px);line-height:1.2}
