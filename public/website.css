@@ -191,3 +191,8 @@ main > .members-promo p{font-family:inherit;font-size:clamp(12px,1vw,15px);line-
 main > .members-promo,main > .athletic-news-home{min-height:150px;box-sizing:border-box}
 main > .members-promo{display:flex;align-items:center}
 @media(max-width:600px){main > .members-promo,main > .athletic-news-home{min-height:150px}}
+
+/* Slimmer, matching homepage Channel Members and News & Events boxes. */
+main > .members-promo,main > .athletic-news-home{min-height:100px;padding-top:12px;padding-bottom:12px}
+main > .members-promo{gap:14px}
+@media(max-width:600px){main > .members-promo,main > .athletic-news-home{min-height:100px;padding-top:12px;padding-bottom:12px}}
