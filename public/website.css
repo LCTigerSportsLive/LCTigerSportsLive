@@ -168,3 +168,10 @@ header .brand-logo{background:#fff;border-radius:9px;padding:5px;box-shadow:0 2p
 
 /* Desktop: Live Scores spans both upper boxes (welcome + Game Day). */
 @media(min-width:761px){.homepage-grid>.homepage-scores{grid-column:1/-1;grid-row:2}}
+
+/* Compact, full-width News & Events homepage box. */
+.athletic-news-home{display:flex;align-items:center;justify-content:space-between;gap:20px;width:100%;box-sizing:border-box;min-height:78px;padding:16px 24px;border:4px solid #ff650b;border-radius:20px;background:linear-gradient(#202020,#040404 70%);color:#fff;text-decoration:none;box-shadow:0 8px 22px #000b}
+.athletic-news-home span{flex:1;min-width:0;font-size:clamp(17px,2vw,29px);font-weight:900;line-height:1.2}
+.athletic-news-home strong{color:#ff8a42;font-size:clamp(13px,1.3vw,18px);white-space:nowrap}
+.athletic-news-home:hover{filter:brightness(1.12)}
+@media(max-width:600px){.athletic-news-home{padding:13px 16px;min-height:68px;gap:10px;flex-wrap:wrap}.athletic-news-home strong{white-space:normal}}
