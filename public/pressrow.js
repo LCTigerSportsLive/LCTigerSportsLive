@@ -5,6 +5,12 @@
   const panel = byId('pressrow-panel');
   if (!status || !board || !panel) return;
   panel.hidden = true;
+  function hideScoreboard() {
+    panel.hidden = true;
+    board.hidden = true;
+    if (update) update.hidden = true;
+    panel.style.display = 'none';
+  }
   const update = byId('pressrow-update');
   const key = name => name.toLowerCase().replace(/[^a-z0-9]/g, '');
   function field(object, names) {
@@ -142,17 +148,14 @@
       if (payload.sport !== 'football') throw new Error('Unexpected Press Row feed sport');
       const gameStatus = String(payload.feed?.snapshot?.gameStatus ?? payload.feed?.snapshot?.status ?? payload.feed?.gameStatus ?? payload.feed?.status ?? '').trim().toLowerCase();
       if (payload.activeGame !== true || /final|finished|complete|ended/.test(gameStatus)) {
-        panel.hidden = true;
-        board.hidden = true;
-        update.hidden = true;
+        hideScoreboard();
         return;
       }
       render(payload.feed, payload.fetchedAt);
       panel.hidden = false;
+      panel.style.display = '';
     } catch {
-      panel.hidden = true;
-      board.hidden = true;
-      update.hidden = true;
+      hideScoreboard();
       status.textContent = 'Live scores are temporarily unavailable. Trying again automatically.';
     } finally { busy = false; }
   }
