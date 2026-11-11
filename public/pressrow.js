@@ -140,7 +140,8 @@
       const payload = await response.json();
       if (!response.ok || !payload.connected || !payload.feed) throw new Error('Feed unavailable');
       if (payload.sport !== 'football') throw new Error('Unexpected Press Row feed sport');
-      if (payload.activeGame !== true) {
+      const gameStatus = String(payload.feed?.snapshot?.gameStatus ?? payload.feed?.snapshot?.status ?? payload.feed?.gameStatus ?? payload.feed?.status ?? '').trim().toLowerCase();
+      if (payload.activeGame !== true || /final|finished|complete|ended/.test(gameStatus)) {
         panel.hidden = true;
         board.hidden = true;
         update.hidden = true;
