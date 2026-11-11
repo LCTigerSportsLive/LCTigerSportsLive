@@ -64,3 +64,7 @@ nav a.active{background:#29120e;border-top:2px solid var(--orange);padding-top:5
 .pressrow-game-details span[hidden]{display:none}
 .pressrow-update{margin:10px 0 0;color:#9b9b9b;font-size:11px}
 .pressrow-update[hidden]{display:none}
+
+/* Center internal back-navigation buttons across all secondary pages. */
+main a.secondary[href^="/"]{display:table;margin-left:auto;margin-right:auto;text-align:center}
+.calendar-actions{justify-content:center}
