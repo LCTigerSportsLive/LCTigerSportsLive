@@ -206,3 +206,6 @@ main > .members-promo h3,main > .athletic-news-home span{font-size:clamp(16px,1.
 /* Match News & Events section heading and card title to homepage typography. */
 main > h2:has(+ .athletic-news-home){font-size:clamp(19px,2vw,28px);font-weight:900;line-height:1.1}
 main > .athletic-news-home span{font-family:inherit;font-size:clamp(19px,2vw,28px);font-weight:900;line-height:1.1}
+
+/* Mobile: hide both button navigation bars; preserve desktop navigation. */
+@media(max-width:760px){body > nav.top-nav,body > nav[aria-label="Main navigation"]{display:none!important}}
