@@ -196,3 +196,6 @@ main > .members-promo{display:flex;align-items:center}
 main > .members-promo,main > .athletic-news-home{min-height:100px;padding-top:12px;padding-bottom:12px}
 main > .members-promo{gap:14px}
 @media(max-width:600px){main > .members-promo,main > .athletic-news-home{min-height:100px;padding-top:12px;padding-bottom:12px}}
+
+/* Black labels on orange News & Events action buttons. */
+body:has(a[href="/football-recap.html"]) main .video a.primary{color:#000!important}
