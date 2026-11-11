@@ -175,3 +175,7 @@ header .brand-logo{background:#fff;border-radius:9px;padding:5px;box-shadow:0 2p
 .athletic-news-home strong{color:#ff8a42;font-size:clamp(13px,1.3vw,18px);white-space:nowrap}
 .athletic-news-home:hover{filter:brightness(1.12)}
 @media(max-width:600px){.athletic-news-home{padding:13px 16px;min-height:68px;gap:10px;flex-wrap:wrap}.athletic-news-home strong{white-space:normal}}
+
+/* Match News & Events typography to the homepage roster/member cards. */
+.athletic-news-home span{font-family:inherit;font-size:clamp(19px,2vw,28px);font-weight:900;line-height:1.1;color:#fff}
+.athletic-news-home strong{font-family:inherit;font-size:clamp(13px,1.3vw,18px);font-weight:900}
