@@ -520,7 +520,7 @@ async function getNextScheduledYoutubeEvent() {
       videoId: upcoming.id,
       url: 'https://www.youtube.com/watch?v=' + upcoming.id
     }, channelUrl: fallback.channelUrl } : fallback;
-    nextYoutubeCache = { data: result, expires: Date.now() + 5 * 60000 };
+    nextYoutubeCache = { data: result, expires: Date.now() + 60 * 1000 };
     return result;
   } catch (error) {
     console.warn('Upcoming YouTube event:', error.message);
