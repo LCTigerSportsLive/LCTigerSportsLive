@@ -217,3 +217,11 @@ main > .athletic-news-home span{font-family:inherit;font-size:clamp(19px,2vw,28p
 .homepage-trivia em{display:inline-block;font-style:normal;font-weight:900;color:#fff;background:linear-gradient(#ff7e16,#f34a00);padding:12px 18px;border-radius:12px}
 .homepage-grid>.homepage-trivia:hover{border-color:#ffb15a}
 @media(max-width:600px){.homepage-grid>.homepage-trivia{min-height:130px;flex-direction:column;gap:8px;padding:16px}}
+
+/* Compact Tiger Trivia card below News & Events, narrower and shorter. */
+main > .homepage-trivia{width:min(100%,680px);min-height:76px;margin:16px auto 0;padding:12px 18px;gap:12px;border-width:3px;border-radius:18px}
+main > .homepage-trivia .homepage-card-icon{font-size:30px}
+main > .homepage-trivia strong{font-size:clamp(16px,1.55vw,21px)}
+main > .homepage-trivia small{font-size:12px;margin:4px 0}
+main > .homepage-trivia em{font-size:12px;padding:8px 12px}
+@media(max-width:600px){main > .homepage-trivia{width:min(100%,440px);min-height:72px;flex-direction:row;padding:10px 12px;gap:10px}main > .homepage-trivia .homepage-card-icon{font-size:26px}}
