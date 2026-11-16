@@ -25,7 +25,7 @@ async function triviaGithub(method, content, sha) {
   const headers={'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'TigerSportsLive-TriviaAdmin'};
   const response=await fetch(url,{method,headers:{...headers,...(method==='PUT'?{'Content-Type':'application/json'}:{})},body:method==='PUT'?JSON.stringify({message:'Update trivia questions from management page',content:Buffer.from(JSON.stringify(content,null,2)+'\n').toString('base64'),sha,branch:'main'}):undefined,signal:AbortSignal.timeout(12000)});
   const payload=await response.json();
-  if (!response.ok) { const error=new Error('GitHub rejected the update ('+response.status+')');error.status=response.status;throw error; }
+  if (!response.ok) { const hint=response.status===401?'GitHub token authentication failed. Replace TRIVIA_GITHUB_TOKEN in Railway with a valid GitHub personal access token.':response.status===403?'GitHub token lacks Contents read/write permission for this repository.':response.status===409?'The question bank changed since it was loaded. Reload and try again.':'GitHub rejected the update ('+response.status+').';const error=new Error(hint);error.status=response.status;throw error; }
   return payload;
 }
 function validTrivia(items) {
