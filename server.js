@@ -1,4 +1,41 @@
 const http = require('http');
+
+const crypto = require('crypto');
+const triviaPath = path.join(__dirname, 'public', 'data', 'trivia.json');
+const triviaRepo = 'LCTigerSportsLive/LCTigerSportsLive';
+const triviaFile = 'public/data/trivia.json';
+function triviaReply(res, status, value) {
+  res.writeHead(status, {'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});
+  res.end(JSON.stringify(value));
+}
+function triviaAuthorized(req) {
+  const expected = process.env.TRIVIA_ADMIN_PASSWORD || '';
+  const received = req.headers['x-trivia-password'] || '';
+  if (!expected || typeof received !== 'string') return false;
+  const a=crypto.createHash('sha256').update(received).digest();
+  const b=crypto.createHash('sha256').update(expected).digest();
+  return crypto.timingSafeEqual(a,b);
+}
+async function triviaGithub(method, content, sha) {
+  const token=process.env.TRIVIA_GITHUB_TOKEN;
+  if (!token) throw new Error('TRIVIA_GITHUB_TOKEN is not configured');
+  const url='https://api.github.com/repos/'+triviaRepo+'/contents/'+triviaFile;
+  const headers={'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'TigerSportsLive-TriviaAdmin'};
+  const response=await fetch(url,{method,headers:{...headers,...(method==='PUT'?{'Content-Type':'application/json'}:{})},body:method==='PUT'?JSON.stringify({message:'Update trivia questions from management page',content:Buffer.from(JSON.stringify(content,null,2)+'\n').toString('base64'),sha,branch:'main'}):undefined,signal:AbortSignal.timeout(12000)});
+  const payload=await response.json();
+  if (!response.ok) { const error=new Error('GitHub rejected the update ('+response.status+')');error.status=response.status;throw error; }
+  return payload;
+}
+function validTrivia(items) {
+  return Array.isArray(items) && items.length<=1000 && items.every(x=>x&&typeof x.id==='string'&&x.id.length<=100&&
+    typeof x.question==='string'&&x.question.trim().length>=8&&x.question.length<=500&&
+    typeof x.answer==='string'&&x.answer.trim().length>0&&x.answer.length<=500&&
+    typeof x.sport==='string'&&x.sport.length<=80&&
+    typeof x.source==='string'&&x.source.trim().length>0&&x.source.length<=200&&
+    typeof x.url==='string'&&x.url.length<=1000&&/^https:\/\//.test(x.url)) &&
+    new Set(items.map(x=>x.id)).size===items.length;
+}
+
 const fs = require('fs');
 const path = require('path');
 
@@ -533,6 +570,25 @@ async function getNextScheduledYoutubeEvent() {
 
 http.createServer(async (req, res) => {
   const pathname = (req.url || '/').split('?')[0];
+  if (pathname === '/api/trivia' && req.method === 'GET') {
+    return fs.readFile(triviaPath,(error,bytes)=>error?triviaReply(res,503,{error:'Trivia unavailable'}):triviaReply(res,200,JSON.parse(bytes.toString())));
+  }
+  if (pathname === '/api/trivia/admin' && (req.method==='GET'||req.method==='PUT')) {
+    if (!triviaAuthorized(req)) return triviaReply(res,401,{error:'Invalid admin password or password not configured'});
+    if (!process.env.TRIVIA_GITHUB_TOKEN) return triviaReply(res,503,{error:'TRIVIA_GITHUB_TOKEN must be configured in Railway'});
+    try {
+      if(req.method==='GET') {
+        const file=await triviaGithub('GET');
+        return triviaReply(res,200,{sha:file.sha,questions:JSON.parse(Buffer.from(file.content.replace(/\\s/g,''),'base64').toString('utf8'))});
+      }
+      let raw='';
+      for await (const chunk of req) {raw+=chunk.toString();if(raw.length>500000) return triviaReply(res,413,{error:'Request too large'});}
+      const body=JSON.parse(raw);
+      if(!validTrivia(body.questions)||typeof body.sha!=='string'||!body.sha) return triviaReply(res,400,{error:'Invalid trivia entries'});
+      const result=await triviaGithub('PUT',body.questions,body.sha);
+      return triviaReply(res,200,{sha:result.content.sha,commit:result.commit.sha});
+    } catch(error) {console.error('Trivia admin:',error.message);return triviaReply(res,error.status===409?409:502,{error:error.status===409?'Questions changed elsewhere; reload and try again':error.message});}
+  }
   // Lightweight liveness check: does not depend on YouTube availability.
   if (pathname === '/api/health' || pathname === '/health') {
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
