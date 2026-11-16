@@ -1,5 +1,7 @@
 const http = require('http');
 
+const fs = require('fs');
+const path = require('path');
 const crypto = require('crypto');
 const triviaPath = path.join(__dirname, 'public', 'data', 'trivia.json');
 const triviaRepo = 'LCTigerSportsLive/LCTigerSportsLive';
@@ -36,8 +38,7 @@ function validTrivia(items) {
     new Set(items.map(x=>x.id)).size===items.length;
 }
 
-const fs = require('fs');
-const path = require('path');
+
 
 const port = process.env.PORT || 3000;
 const types = { '.html':'text/html', '.css':'text/css', '.js':'text/javascript', '.json':'application/json', '.svg':'image/svg+xml', '.webp':'image/webp' };
