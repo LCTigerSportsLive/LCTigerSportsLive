@@ -464,14 +464,6 @@
     "sport": "Cross Country"
   },
   {
-    "id": "legacy-059",
-    "question": "What grade was Liberty Center's Colbie Strayer in at the 2026 girls Division IV state cross country meet?",
-    "answer": "12",
-    "source": "2026 state cross country results",
-    "url": "https://www.podiumwatch.org/state/2026/",
-    "sport": "Cross Country"
-  },
-  {
     "id": "legacy-060",
     "question": "What place did Liberty Center's Castyn Miller finish at the 2026 girls Division IV state cross country meet?",
     "answer": "27th overall",
@@ -480,73 +472,9 @@
     "sport": "Cross Country"
   },
   {
-    "id": "legacy-061",
-    "question": "What time did Liberty Center's Castyn Miller run at the 2026 girls Division IV state cross country meet?",
-    "answer": "19:13.1",
-    "source": "2026 state cross country results",
-    "url": "https://www.podiumwatch.org/state/2026/",
-    "sport": "Cross Country"
-  },
-  {
-    "id": "legacy-062",
-    "question": "What grade was Liberty Center's Castyn Miller in at the 2026 girls Division IV state cross country meet?",
-    "answer": "10",
-    "source": "2026 state cross country results",
-    "url": "https://www.podiumwatch.org/state/2026/",
-    "sport": "Cross Country"
-  },
-  {
-    "id": "legacy-063",
-    "question": "What place did Liberty Center's Mya Stark finish at the 2026 girls Division IV state cross country meet?",
-    "answer": "41st overall",
-    "source": "2026 state cross country results",
-    "url": "https://www.podiumwatch.org/state/2026/",
-    "sport": "Cross Country"
-  },
-  {
-    "id": "legacy-064",
-    "question": "What time did Liberty Center's Mya Stark run at the 2026 girls Division IV state cross country meet?",
-    "answer": "19:32.3",
-    "source": "2026 state cross country results",
-    "url": "https://www.podiumwatch.org/state/2026/",
-    "sport": "Cross Country"
-  },
-  {
-    "id": "legacy-065",
-    "question": "What grade was Liberty Center's Mya Stark in at the 2026 girls Division IV state cross country meet?",
-    "answer": "10",
-    "source": "2026 state cross country results",
-    "url": "https://www.podiumwatch.org/state/2026/",
-    "sport": "Cross Country"
-  },
-  {
-    "id": "legacy-066",
-    "question": "What place did Liberty Center's Ryley Miller finish at the 2026 girls Division IV state cross country meet?",
-    "answer": "51st overall",
-    "source": "2026 state cross country results",
-    "url": "https://www.podiumwatch.org/state/2026/",
-    "sport": "Cross Country"
-  },
-  {
-    "id": "legacy-067",
-    "question": "What time did Liberty Center's Ryley Miller run at the 2026 girls Division IV state cross country meet?",
-    "answer": "19:42.7",
-    "source": "2026 state cross country results",
-    "url": "https://www.podiumwatch.org/state/2026/",
-    "sport": "Cross Country"
-  },
-  {
     "id": "legacy-068",
     "question": "What grade was Liberty Center's Ryley Miller in at the 2026 girls Division IV state cross country meet?",
     "answer": "11",
-    "source": "2026 state cross country results",
-    "url": "https://www.podiumwatch.org/state/2026/",
-    "sport": "Cross Country"
-  },
-  {
-    "id": "legacy-069",
-    "question": "What place did Liberty Center's Brynn Gyurasics finish at the 2026 girls Division IV state cross country meet?",
-    "answer": "67th overall",
     "source": "2026 state cross country results",
     "url": "https://www.podiumwatch.org/state/2026/",
     "sport": "Cross Country"
@@ -568,145 +496,9 @@
     "sport": "Cross Country"
   },
   {
-    "id": "legacy-072",
-    "question": "By how many points did Liberty Center beat Minster in the 2026 girls Division IV state cross country team standings?",
-    "answer": "33 points",
-    "source": "2026 state cross country results",
-    "url": "https://www.podiumwatch.org/state/2026/",
-    "sport": "Cross Country"
-  },
-  {
-    "id": "legacy-073",
-    "question": "By how many points did Liberty Center beat Grandview Heights in the 2026 girls Division IV state cross country team standings?",
-    "answer": "37 points",
-    "source": "2026 state cross country results",
-    "url": "https://www.podiumwatch.org/state/2026/",
-    "sport": "Cross Country"
-  },
-  {
-    "id": "legacy-074",
-    "question": "By how many points did Liberty Center beat Rittman in the 2026 girls Division IV state cross country team standings?",
-    "answer": "73 points",
-    "source": "2026 state cross country results",
-    "url": "https://www.podiumwatch.org/state/2026/",
-    "sport": "Cross Country"
-  },
-  {
-    "id": "legacy-075",
-    "question": "By how many points did Liberty Center beat Fort Loramie in the 2026 girls Division IV state cross country team standings?",
-    "answer": "102 points",
-    "source": "2026 state cross country results",
-    "url": "https://www.podiumwatch.org/state/2026/",
-    "sport": "Cross Country"
-  },
-  {
-    "id": "legacy-076",
-    "question": "By how many points did Liberty Center beat Ottawa Hills in the 2026 girls Division IV state cross country team standings?",
-    "answer": "114 points",
-    "source": "2026 state cross country results",
-    "url": "https://www.podiumwatch.org/state/2026/",
-    "sport": "Cross Country"
-  },
-  {
-    "id": "legacy-077",
-    "question": "By how many points did Liberty Center beat Maplewood in the 2026 girls Division IV state cross country team standings?",
-    "answer": "120 points",
-    "source": "2026 state cross country results",
-    "url": "https://www.podiumwatch.org/state/2026/",
-    "sport": "Cross Country"
-  },
-  {
-    "id": "legacy-078",
-    "question": "By how many points did Liberty Center beat Kirtland in the 2026 girls Division IV state cross country team standings?",
-    "answer": "131 points",
-    "source": "2026 state cross country results",
-    "url": "https://www.podiumwatch.org/state/2026/",
-    "sport": "Cross Country"
-  },
-  {
-    "id": "legacy-079",
-    "question": "By how many points did Liberty Center beat McDonald in the 2026 girls Division IV state cross country team standings?",
-    "answer": "147 points",
-    "source": "2026 state cross country results",
-    "url": "https://www.podiumwatch.org/state/2026/",
-    "sport": "Cross Country"
-  },
-  {
-    "id": "legacy-080",
-    "question": "By how many points did Liberty Center beat Archbold in the 2026 girls Division IV state cross country team standings?",
-    "answer": "193 points",
-    "source": "2026 state cross country results",
-    "url": "https://www.podiumwatch.org/state/2026/",
-    "sport": "Cross Country"
-  },
-  {
     "id": "legacy-081",
     "question": "By how many points did Liberty Center beat Summit Country Day in the 2026 girls Division IV state cross country team standings?",
     "answer": "201 points",
-    "source": "2026 state cross country results",
-    "url": "https://www.podiumwatch.org/state/2026/",
-    "sport": "Cross Country"
-  },
-  {
-    "id": "legacy-082",
-    "question": "By how many points did Liberty Center beat Milan Edison in the 2026 girls Division IV state cross country team standings?",
-    "answer": "217 points",
-    "source": "2026 state cross country results",
-    "url": "https://www.podiumwatch.org/state/2026/",
-    "sport": "Cross Country"
-  },
-  {
-    "id": "legacy-083",
-    "question": "By how many points did Liberty Center beat St. John in the 2026 girls Division IV state cross country team standings?",
-    "answer": "218 points",
-    "source": "2026 state cross country results",
-    "url": "https://www.podiumwatch.org/state/2026/",
-    "sport": "Cross Country"
-  },
-  {
-    "id": "legacy-084",
-    "question": "By how many points did Liberty Center beat West Liberty-Salem in the 2026 girls Division IV state cross country team standings?",
-    "answer": "222 points",
-    "source": "2026 state cross country results",
-    "url": "https://www.podiumwatch.org/state/2026/",
-    "sport": "Cross Country"
-  },
-  {
-    "id": "legacy-085",
-    "question": "By how many points did Liberty Center beat Bellaire in the 2026 girls Division IV state cross country team standings?",
-    "answer": "240 points",
-    "source": "2026 state cross country results",
-    "url": "https://www.podiumwatch.org/state/2026/",
-    "sport": "Cross Country"
-  },
-  {
-    "id": "legacy-086",
-    "question": "By how many points did Liberty Center beat Mount Gilead in the 2026 girls Division IV state cross country team standings?",
-    "answer": "287 points",
-    "source": "2026 state cross country results",
-    "url": "https://www.podiumwatch.org/state/2026/",
-    "sport": "Cross Country"
-  },
-  {
-    "id": "legacy-087",
-    "question": "By how many points did Liberty Center beat Dayton Christian in the 2026 girls Division IV state cross country team standings?",
-    "answer": "304 points",
-    "source": "2026 state cross country results",
-    "url": "https://www.podiumwatch.org/state/2026/",
-    "sport": "Cross Country"
-  },
-  {
-    "id": "legacy-088",
-    "question": "By how many points did Liberty Center beat Lincolnview in the 2026 girls Division IV state cross country team standings?",
-    "answer": "309 points",
-    "source": "2026 state cross country results",
-    "url": "https://www.podiumwatch.org/state/2026/",
-    "sport": "Cross Country"
-  },
-  {
-    "id": "legacy-089",
-    "question": "By how many points did Liberty Center beat St. Henry in the 2026 girls Division IV state cross country team standings?",
-    "answer": "341 points",
     "source": "2026 state cross country results",
     "url": "https://www.podiumwatch.org/state/2026/",
     "sport": "Cross Country"
